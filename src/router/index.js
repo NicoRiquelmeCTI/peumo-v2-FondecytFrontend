@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Landing from '@/views/Landing.vue'
-import Thot from '@/views/Thot.vue'
+import Inicio from '@/views/Inicio.vue'
+import Dashboard from '@/views/Dashboard.vue'
 
 Vue.use(Router)
 
@@ -11,12 +11,12 @@ export default new Router({
     redirect: '/'
   }, {
     path: '/',
-    name: 'Landing',
-    component: Landing
+    name: 'Inicio',
+    component: Inicio
   }, {
-    path: '/thot',
-    name: 'Thot',  
-    component: Thot
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard
   },
 ]
 })

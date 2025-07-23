@@ -29,11 +29,17 @@ const actions = {
   saveEstadisticasGenerales: ({ commit }, data) => {
     commit("setEstadisticasGenerales", data);
   },
-  saveAnalysisTab: ({ commit }, data) => {
-    commit("setAnalysisTab", data);
+  saveAnalisisPantalla: ({ commit }, { endpoint, selected }) => {
+    commit("setAnalisisPantalla", {endpoint, selected});
   },
   saveAnalysisGroupTab: ({ commit }, data) => {
     commit("setAnalysisGroupTab", data);
+  },
+  saveFilename: ({ commit }, data) => {
+    commit("setFilename", data);
+  },
+  savetextoEditor: ({ commit }, data) => {
+    commit("setTextoEditor", data);
   }
 }
 
