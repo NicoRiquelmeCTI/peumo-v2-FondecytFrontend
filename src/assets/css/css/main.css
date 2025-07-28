@@ -353,6 +353,14 @@ footer, header, hgroup, menu, nav, section {
   text-decoration: underline;
 }
 
+.bajada {
+  line-height: 1.3;
+  margin-top: 8px;
+  color: #374957;
+  font-size: 14px;
+  font-family: "Lato-Regular", Helvetica Neue, -apple-system, "system-ui", BlinkMacSystemFont, sans-serif;
+}
+
 .status-bar {
   position: absolute;
   left: 0;

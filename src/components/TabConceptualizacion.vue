@@ -2,6 +2,9 @@
   <div id="Conceptualizacion">
       <header class="cont-tit">
           <h2 class="tit">Conceptualización</h2>
+          <p class="bajada">
+              En este botón puedes encontrar ayuda para la fase de generar ideas. <br> Si quieres observar el índice y la extensión de las tesis de un año en particular, indícalo. Si deseas buscar por patrón, te sugerimos marcar la opción ‘todos los años’.
+          </p>
       </header>
       <div class="wrapper">
           <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">
