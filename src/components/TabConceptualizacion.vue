@@ -127,7 +127,7 @@ export default {
                 {value: 'Extension', label:"Extension"}
             ],
             optionsTipoAnio: [
-                { value: "null", label: "-" },
+                { value: "0", label: "Todos los años" },
                 { value: "2007", label: "2007" },
                 { value: "2008", label: "2008" },
                 { value: "2009", label: "2009" },
