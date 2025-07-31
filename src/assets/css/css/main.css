@@ -359,6 +359,7 @@ footer, header, hgroup, menu, nav, section {
   color: #374957;
   font-size: 14px;
   font-family: "Lato-Regular", Helvetica Neue, -apple-system, "system-ui", BlinkMacSystemFont, sans-serif;
+  max-width: 400px;
 }
 
 .status-bar {

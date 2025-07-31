@@ -2,6 +2,9 @@
     <div id="Reconceptualizacion">
         <header class="cont-tit">
             <h2 class="tit">Transcripción</h2>
+            <p class="bajada">
+                Puedes complementar esta función con todas las de la columna izquierda (‘tipos de análisis’).
+            </p>
         </header>
         <div class="wrapper">
             <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">
