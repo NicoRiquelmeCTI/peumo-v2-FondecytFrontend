@@ -2,6 +2,13 @@
     <div id="Transcripcion">
         <header class="cont-tit">
             <h2 class="tit">Transcripción</h2>
+            <p class="bajada">
+                El repertorio de frases que encontrarás acá se obtuvo a partir del libro ‘5000 frases precocinadas para textos científicos’, del grupo NeoScientia, a cargo de Pedro Margollés García (
+                <a href="https://neuroscientia.com" target="_blank" rel="noopener noreferrer">
+                neuroscientia.com
+                </a>
+                )
+            </p>
         </header>
         <div class="wrapper">
             <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">

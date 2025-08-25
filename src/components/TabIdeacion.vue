@@ -2,6 +2,9 @@
     <div id="Ideacion">
         <header class="cont-tit">
             <h2 class="tit">Ideación</h2>
+            <p class="bajada">
+                En la casilla de patrón debes copiar el fragmento de tu tesis que está cumpliendo cierto propósito para revisar oraciones similares. Te sugerimos marcar la opción ‘todos los años’ para mayor precisión.
+            </p>
         </header>
         <div class="wrapper">
             <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">
@@ -88,7 +91,7 @@ export default {
             anio: 0,
             funciones: null,
             optionsTipoAnio: [
-                { value: "null", label: "-" },
+                { value: "0", label: "Todos los años" },
                 { value: "2007", label: "2007" },
                 { value: "2008", label: "2008" },
                 { value: "2009", label: "2009" },

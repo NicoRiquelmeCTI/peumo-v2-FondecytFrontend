@@ -2,6 +2,9 @@
   <div id="Conceptualizacion">
       <header class="cont-tit">
           <h2 class="tit">Conceptualización</h2>
+          <p class="bajada">
+              En este botón puedes encontrar ayuda para la fase de generar ideas. <br> Si quieres observar el índice y la extensión de las tesis de un año en particular, indícalo. Si deseas buscar por patrón, te sugerimos marcar la opción ‘todos los años’.
+          </p>
       </header>
       <div class="wrapper">
           <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">
@@ -127,7 +130,7 @@ export default {
                 {value: 'Extension', label:"Extension"}
             ],
             optionsTipoAnio: [
-                { value: "null", label: "-" },
+                { value: "0", label: "Todos los años" },
                 { value: "2007", label: "2007" },
                 { value: "2008", label: "2008" },
                 { value: "2009", label: "2009" },
