@@ -139,7 +139,7 @@ export default {
 
             ],
             optionsTipoAnio: [
-                { value: "null", label: "-" },
+                { value: "null", label: "Todos los años" },
                 { value: "2007", label: "2007" },
                 { value: "2008", label: "2008" },
                 { value: "2009", label: "2009" },
@@ -183,7 +183,12 @@ export default {
                     formData
                 );
                 this.resIndice = res.data.html_response;
-                this.resIndice2 = res.data.context2;
+                // Si es un array, para cada uno de sus elementos, limpiar el campo paper_index para dejar solo texto plano
+                const context2 = res.data.context2.map(item => {
+                    item.paper_index = item.paper_index.replace(/<[^>]*>?/g, '');
+                    return item;
+                });
+                this.resIndice2 = context2;
                 this.makeToast(
                     "Mostrar Indice realizado exitosamente.",
                     "success"
