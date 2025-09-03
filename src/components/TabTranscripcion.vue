@@ -185,7 +185,12 @@ export default {
                 this.resIndice = res.data.html_response;
                 // Si es un array, para cada uno de sus elementos, limpiar el campo paper_index para dejar solo texto plano
                 const context2 = res.data.context2.map(item => {
-                    item.paper_index = item.paper_index.replace(/<[^>]*>?/g, '');
+                    item.paper_index = item.paper_index
+                        .replace(/<[^>]*>?/g, '')
+                        .split(/[.!?]+\s+/)
+                        .filter(sentence => sentence.trim().length > 0)
+                        .map(sentence => `• ${sentence.trim()}`)
+                        .join('<br>');
                     return item;
                 });
                 this.resIndice2 = context2;

@@ -67,7 +67,7 @@
                         </b-card-header>
                         <b-collapse :id="`collapse-${ index }-ideacion`" accordion="my-accordion" role="tabpanel">
                             <b-card-body>
-                                <b-card-text v-html="item.paper_index"></b-card-text>
+                                <div v-html="item.paper_index" class="preserve-line-breaks"></div>
                             </b-card-body>
                         </b-collapse>
                     </b-card>
@@ -137,11 +137,15 @@ export default {
 
                 // Si es un array, para cada uno de sus elementos, limpiar el campo paper_index para dejar solo texto plano
                 const context2 = res.data.context2.map(item => {
-                    item.paper_index = item.paper_index.replace(/<[^>]*>?/g, '');
+                    item.paper_index = item.paper_index
+                        .replace(/<[^>]*>?/g, '')
+                        .split(/[.!?]+\s+/)
+                        .filter(sentence => sentence.trim().length > 0)
+                        .map(sentence => `• ${sentence.trim()}`)
+                        .join('<br>');
                     return item;
                 });
                 this.resIndice2 = context2;
-                console.log(this.resIndice2);
                 this.makeToast(
                     "Mostrar Indice realizado exitosamente.",
                     "success"
@@ -165,3 +169,11 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+.preserve-line-breaks {
+  white-space: pre-line;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+</style>
