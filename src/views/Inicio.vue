@@ -78,8 +78,7 @@ export default {
           );
         }
         let res = await axios.post(
-          "http://www.redilegra.com/backend/api/FileUploadView",
-          // "http://127.0.0.1:8000/api/FileUploadView",
+          `${process.env.VUE_APP_API_URL}/api/FileUploadView`,
           formData
         );
         this.saveEstadisticasGenerales(res.data.statistics);

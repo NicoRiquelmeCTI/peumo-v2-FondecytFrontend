@@ -98,8 +98,7 @@ export default {
         formData.append("patron", this.patron);
           formData.append("anio", this.anio);
         let res = await axios.post(
-          "http://www.redilegra.com/backend/api/Indice",
-          //"http://127.0.0.1:8000/api/Concordancia",
+          `${process.env.VUE_APP_API_URL}/api/Indice`,
           formData
         );
           this.resIndice = res.data.html_response;

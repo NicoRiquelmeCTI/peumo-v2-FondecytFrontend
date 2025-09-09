@@ -178,8 +178,7 @@ export default {
                 formData.append("macromove", this.MM)
                 formData.append("pasos", this.Pasos)
                 let res = await axios.post(
-                    "http://www.redilegra.com/backend/api/Transcripcion",
-                    //"http://127.0.0.1:8000/api/Concordancia",
+                    `${process.env.VUE_APP_API_URL}/api/Transcripcion`,
                     formData
                 );
                 this.resIndice = res.data.html_response;
