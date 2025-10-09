@@ -105,7 +105,8 @@ export default {
 <style>
 /* Dashboard Layout */
 .dashboard {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: var(--background-color);
   display: flex;
   flex-direction: column;
@@ -173,6 +174,7 @@ export default {
   flex: 1;
   display: flex;
   height: calc(100vh - 80px);
+  max-height: calc(100vh - 80px);
   overflow: hidden;
 }
 
@@ -207,22 +209,29 @@ export default {
   background: var(--background-color);
   min-width: 0;
   overflow: hidden;
+  height: 100%;
+  max-height: 100%;
 }
 
 /* Modern Splitpanes */
 .modern-splitpanes {
   height: 100%;
+  max-height: 100%;
 }
 
 .workspace-pane {
   background: var(--surface-color);
   border-radius: 0;
   overflow: hidden;
+  height: 100%;
+  max-height: 100%;
 }
 
 .pane-content {
   height: 100%;
+  max-height: 100%;
   padding: 0;
+  overflow: hidden;
 }
 
 /* Splitpanes Styling */

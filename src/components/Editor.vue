@@ -60,6 +60,7 @@ export default {
 /* Editor Container */
 .editor-container {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -67,6 +68,7 @@ export default {
 
 .editor-wrapper {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -85,12 +87,15 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: white;
+  min-height: 0;
 }
 
 .quill-editor {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* Quill Editor Styles */
@@ -106,9 +111,10 @@ export default {
 .quill-editor >>> .ql-editor {
   padding: 1rem;
   min-height: 200px;
-  max-height: none;
+  max-height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
+  height: auto;
 }
 
 .quill-editor >>> .ql-toolbar {

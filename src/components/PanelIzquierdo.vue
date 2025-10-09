@@ -40,6 +40,7 @@ export default {
 <style>
 #PanelIzquierdo {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--surface-color);
@@ -48,6 +49,7 @@ export default {
 
 .container {
   height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   padding: 1.5rem;
