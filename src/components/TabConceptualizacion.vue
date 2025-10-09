@@ -159,8 +159,7 @@ export default {
                 formData.append("anio", this.anio);
                 formData.append("funciones", this.funciones);
                 let res = await axios.post(
-                    "http://www.redilegra.com/backend/api/Conceptualizacion",
-                    //"http://127.0.0.1:8000/api/Concordancia",
+                    `${process.env.VUE_APP_API_URL}/api/Conceptualizacion`,
                     formData
                 );
                 this.resIndice = res.data.html_response;

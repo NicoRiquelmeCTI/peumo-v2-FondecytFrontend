@@ -87,8 +87,7 @@ export default {
           );
         }
         let res = await axios.post(
-          "http://www.redilegra.com/backend/api/FileUploadView",
-          // "http://127.0.0.1:8000/api/FileUploadView",
+          `${process.env.VUE_APP_API_URL}/api/FileUploadView`,
           formData
         );
         console.log(res.data);
@@ -111,8 +110,7 @@ export default {
         );
         formData.append("text", this.textoEditor);
         let res = await axios.post(
-          "http://www.redilegra.com/backend/api/SendText",
-          // "http://127.0.0.1:8000/api/SendText", // only for dev env.
+          `${process.env.VUE_APP_API_URL}/api/SendText`,
           formData
         );
         console.log(res.data);

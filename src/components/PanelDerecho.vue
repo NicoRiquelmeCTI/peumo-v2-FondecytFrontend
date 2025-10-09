@@ -16,6 +16,10 @@
                       data-toggle-target=".tab-content-2"
                       :class="{ 'active': isSelected(1) }"
                       @click="selected = 1" >Concordancia</b-nav-item>
+              <b-nav-item
+                      data-toggle-target=".tab-content-3"
+                      :class="{ 'active': isSelected(3) }"
+                      @click="selected = 3">Cápsulas</b-nav-item>
               <b-nav-dropdown
                       id="dropdown_test"
                       text="Consulta Procesos"
@@ -41,11 +45,7 @@
                   >Traducción Reconceptualización</b-dropdown-item>
 
               </b-nav-dropdown>
-              <b-nav-item
-                          data-toggle-target=".tab-content-3"
-                          :class="{ 'active': isSelected(3) }"
-                          @click="selected = 3"
-              >Cápsulas</b-nav-item>
+              
           </b-nav>
         <!--
         <nav class="tabs__bar tab-btns">
