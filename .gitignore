@@ -20,4 +20,8 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+
+#Ignore cursor AI rules
+.cursor/rules/codacy.mdc
 .vercel
