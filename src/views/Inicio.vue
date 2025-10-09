@@ -90,6 +90,7 @@
     <!-- Features Section -->
     <div class="features-section" data-aos="fade-up" data-aos-delay="600">
       <div class="container">
+        <h2 class="features-title">Características Principales</h2>
         <div class="features-grid">
           <div class="feature-card" data-aos="fade-up" data-aos-delay="700">
             <div class="feature-icon">
@@ -298,23 +299,68 @@ export default {
 };
 </script>
 <style scoped>
+/* Override old styles */
+#Inicio.inicio {
+  background: none !important;
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Force features section visibility */
+.features-section {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.features-section * {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
+
+#Inicio.inicio .auxi {
+  max-width: none !important;
+}
+
+#Inicio.inicio .content-main {
+  height: auto !important;
+  display: block !important;
+  -webkit-box: none !important;
+  -webkit-flex: none !important;
+  flex: none !important;
+  -webkit-flex-direction: none !important;
+  flex-direction: none !important;
+  -webkit-justify-content: none !important;
+  justify-content: none !important;
+  -webkit-align-items: none !important;
+  align-items: none !important;
+  background-image: none !important;
+  background-position: none !important;
+  background-repeat: none !important;
+}
+
 /* Hero Section */
 .hero-section {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
+  min-height: 70vh !important;
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
+  overflow: visible !important;
 }
 
 .hero-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  z-index: -2;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  z-index: -2 !important;
 }
 
 .floating-shapes {
@@ -531,28 +577,49 @@ export default {
 
 /* Features Section */
 .features-section {
-  padding: 4rem 0;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  padding: 4rem 0 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 400px !important;
+  position: relative !important;
+  z-index: 10 !important;
+  margin-top: 2rem !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.features-title {
+  text-align: center !important;
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: white !important;
+  margin-bottom: 3rem !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 .features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 2rem !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 2rem !important;
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1rem;
-  padding: 2rem;
-  text-align: center;
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 1rem !important;
+  padding: 2rem !important;
+  text-align: center !important;
+  transition: all 0.3s ease !important;
+  display: block !important;
+  width: 100% !important;
+  min-height: 200px !important;
+  position: relative !important;
+  z-index: 2 !important;
 }
 
 .feature-card:hover {
@@ -573,15 +640,30 @@ export default {
 }
 
 .feature-card h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 1rem;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  color: white !important;
+  margin-bottom: 1rem !important;
+  display: block !important;
 }
 
 .feature-card p {
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8) !important;
+  line-height: 1.6 !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.feature-icon {
+  width: 64px !important;
+  height: 64px !important;
+  margin: 0 auto 1.5rem !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
 }
 
 /* Responsive Design */
