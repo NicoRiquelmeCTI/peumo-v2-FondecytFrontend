@@ -1,9 +1,5 @@
 <template>
   <div id="TabRetroalimentacion" v-if="retroalimentaciones.html" class="wrapper">
-    <div class="estadisticas">
-      <Estadisticas />
-    </div>
-    <br>
     <p v-if="retroalimentaciones.ayuda">{{ retroalimentaciones.ayuda }} </p>
     <br>
     <div>
@@ -48,13 +44,11 @@
   
 <script>
 import { mapGetters } from "vuex";
-import Estadisticas from "@/components/Estadisticas.vue";
 import DetalleRetroalimentacion from "@/components/DetalleRetroalimentacion.vue";
 
 export default {
   name: "TabRetroalimentacion",
   components: {
-    Estadisticas,
     DetalleRetroalimentacion
   },
   data() {
