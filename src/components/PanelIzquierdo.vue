@@ -39,9 +39,66 @@ export default {
 
 <style>
 #PanelIzquierdo {
-  text-align: justify;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  height: 95vh;
-} 
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-color);
+  overflow: hidden;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.enc-txt {
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.tit {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.doc-name {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .tit {
+    font-size: 1.25rem;
+  }
+  
+  .doc-name {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+  
+  .tit {
+    font-size: 1.125rem;
+  }
+  
+  .enc-txt {
+    margin-bottom: 1rem;
+  }
+}
 </style>

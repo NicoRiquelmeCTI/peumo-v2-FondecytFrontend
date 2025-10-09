@@ -1,8 +1,9 @@
 <template>
-  <div id="PanelDerecho">
-    <div class="container block-tabs">
-      <header class="cont-tit">
-        <h2 class="tit">Acerca de tu texto y otros apoyos</h2>
+  <div id="PanelDerecho" class="panel-derecho">
+    <div class="container">
+      <header class="panel-header">
+        <h2 class="panel-title">Acerca de tu texto y otros apoyos</h2>
+        <p class="panel-subtitle">Herramientas y recursos para mejorar tu escritura</p>
       </header>
       <!-- tabs -->
       <div class="content">
@@ -88,43 +89,43 @@
         </nav>
         -->
         <div class="tabs__content tab-content tab-content-1"
-          :class="{ 'active': isSelected(0) }">
+          v-show="isSelected(0)">
           <TabRetroalimentacion />
         </div>
         <div
           class="tabs__content tab-content tab-content-2"
-          :class="{ 'active': isSelected(1) }"
+          v-show="isSelected(1)"
         >
           <TabConcordancia />
         </div>
         <div
           class="tabs__content tab-content tab-content-3"
-          :class="{ 'active': isSelected(3) }"
+          v-show="isSelected(3)"
         >
           <TabCapsulas />
         </div>
 
         <div
                 class="tabs__content tab-content tab-content-4"
-                :class="{ 'active': isSelected(4) }"
+                v-show="isSelected(4)"
         >
             <tabConceptualizacion />
         </div>
         <div
                 class="tabs__content tab-content tab-content-5"
-                :class="{ 'active': isSelected(5) }"
+                v-show="isSelected(5)"
         >
             <tabIdeacion />
         </div>
           <div
                   class="tabs__content tab-content tab-content-6"
-                  :class="{ 'active': isSelected(6) }"
+                  v-show="isSelected(6)"
           >
               <tabTranscripcion />
           </div>
           <div
                   class="tabs__content tab-content tab-content-7"
-                  :class="{ 'active': isSelected(7) }"
+                  v-show="isSelected(7)"
           >
               <tabReconceptualizacion />
           </div>
@@ -173,3 +174,144 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Panel Derecho */
+.panel-derecho {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-color);
+  overflow: hidden;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.panel-header {
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.panel-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Navigation Tabs */
+.nav {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.nav-item {
+  margin-right: 0.5rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+}
+
+.nav-link:hover {
+  color: var(--primary-color);
+  background: var(--background-color);
+}
+
+.nav-link.active {
+  color: var(--primary-color);
+  background: var(--background-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+/* Tab Content */
+.tabs__content {
+  padding: 1rem 0;
+}
+
+.tabs__content.active {
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .panel-title {
+    font-size: 1.125rem;
+  }
+  
+  .panel-subtitle {
+    font-size: 0.8125rem;
+  }
+  
+  .nav-link {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+  
+  .panel-title {
+    font-size: 1rem;
+  }
+  
+  .panel-header {
+    margin-bottom: 1rem;
+  }
+  
+  .nav-link {
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Scrollbar */
+.content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+</style>
