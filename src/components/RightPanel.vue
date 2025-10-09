@@ -18,7 +18,7 @@
           <TabConcordancia />
         </b-tab>
         <b-tab title="Consulta Procesos">
-          <TabConcordancia />
+          <TabConsultaProcesos />
         </b-tab>
         <b-tab title="Cápsulas informativas">
           hola
