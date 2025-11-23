@@ -110,7 +110,8 @@
 
       <!-- Editor -->
       <div class="editor-section">
-      <Editor />
+      <FileHandler v-if="!hasDoc" />
+      <Editor v-else />
       </div>
     </div>
   </div>
@@ -120,12 +121,14 @@
 import { mapActions, mapGetters } from "vuex";
 import { Analisis } from "@/includes/constants.js";
 import Editor from "@/components/Editor.vue";
+import FileHandler from "@/components/FileHandler.vue";
 import axios from "axios";
 
 export default {
   name: "PanelIzquierdo",
   components: {
-    Editor
+    Editor,
+    FileHandler
   },
   data() {
     return {
@@ -138,10 +141,14 @@ export default {
       filename: "getFilename",
       retroalimentacion: "getRetroalimentacion",
       textoEditor: "getTextoEditor",
-      estadisticas: "getEstadisticasGenerales"
+      estadisticas: "getEstadisticasGenerales",
+      analysisTab: "getAnalysisTab"
     }),
     hasContent() {
       return this.textoEditor && this.textoEditor.trim().length > 0;
+    },
+    hasDoc() {
+      return !!this.analysisTab;
     }
   },
   methods: {

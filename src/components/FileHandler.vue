@@ -9,8 +9,14 @@
     <!-- Action Buttons -->
     <div class="action-buttons">
       <!-- File Upload Section -->
-      <div class="upload-section">
-        <label for="file" class="upload-btn">
+      <div
+        class="upload-section"
+        @dragover.prevent="onDragOver"
+        @dragenter.prevent="onDragEnter"
+        @dragleave.prevent="onDragLeave"
+        @drop.prevent="onDrop"
+      >
+        <label for="file" class="upload-btn" :class="{ dragging: isDragging }">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -31,17 +37,7 @@
         />
       </div>
 
-      <!-- Secondary Actions -->
-      <div class="secondary-actions">
-        <button class="btn-secondary" @click="exportHTML()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Descargar
-        </button>
-      </div>
+      <!-- Secondary Actions (removed download button per request) -->
     </div>
 
     <!-- Primary Action -->
@@ -68,6 +64,7 @@ export default {
   data() {
     return {
       file: null,
+      isDragging: false,
     };
   },
   computed: {
@@ -97,6 +94,30 @@ export default {
       "saveFilename",
       "saveAnalisisPantalla",
     ]),
+    onDragOver() {
+      // Keep drag state active for visual feedback
+      this.isDragging = true;
+    },
+    onDragEnter() {
+      this.isDragging = true;
+    },
+    onDragLeave() {
+      this.isDragging = false;
+    },
+    onDrop(event) {
+      this.isDragging = false;
+      const files = event.dataTransfer && event.dataTransfer.files;
+      if (!files || files.length === 0) return;
+      const dropped = files[0];
+      const ext = (dropped.name.split(".").pop() || "").toLowerCase();
+      if (!["docx", "doc", "txt"].includes(ext)) {
+        this.mostrarToast("Archivo no soportado. Usa .doc, .docx o .txt", "danger");
+        return;
+      }
+      this.file = dropped;
+      this.saveFilename(this.file.name);
+      this.onSubmit();
+    },
     handleFileUpload() {
       this.file = this.$refs.file.files[0];
       this.saveFilename(this.file.name);
@@ -328,6 +349,12 @@ export default {
   border-color: var(--primary-color);
   color: var(--primary-color);
   background: rgba(37, 99, 235, 0.05);
+}
+
+.upload-btn.dragging {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .upload-btn:active {
