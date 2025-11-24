@@ -17,10 +17,7 @@
                       data-toggle-target=".tab-content-2"
                       :class="{ 'active': isSelected(1) }"
                       @click="selected = 1" >Concordancia</b-nav-item>
-              <b-nav-item
-                      data-toggle-target=".tab-content-3"
-                      :class="{ 'active': isSelected(3) }"
-                      @click="selected = 3">Cápsulas</b-nav-item>
+              <!-- Cápsulas tab removed -->
               <b-nav-dropdown
                       id="dropdown_test"
                       text="Consulta Procesos"
@@ -98,12 +95,7 @@
         >
           <TabConcordancia />
         </div>
-        <div
-          class="tabs__content tab-content tab-content-3"
-          v-show="isSelected(3)"
-        >
-          <TabCapsulas />
-        </div>
+        <!-- Cápsulas content removed -->
 
         <div
                 class="tabs__content tab-content tab-content-4"
@@ -141,7 +133,6 @@ import { Analisis } from "@/includes/constants.js";
 import TabRetroalimentacion from "@/components/TabRetroalimentacion.vue";
 import TabConcordancia from "@/components/TabConcordancia.vue";
 
-import TabCapsulas from "@/components/TabCapsulas.vue";
 import tabConceptualizacion from "./TabConceptualizacion.vue";
 import tabIdeacion from "./TabIdeacion.vue";
 import tabTranscripcion from "./TabTranscripcion.vue";
@@ -151,7 +142,6 @@ export default {
   components: {
     TabRetroalimentacion,
     TabConcordancia,
-    TabCapsulas,
       tabConceptualizacion,
       tabIdeacion,
       tabTranscripcion,
