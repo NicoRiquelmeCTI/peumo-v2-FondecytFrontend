@@ -2,99 +2,91 @@
   <div id="PanelDerecho" class="panel-derecho">
     <div class="container">
       <header class="panel-header">
-        <h2 class="panel-title">Acerca de tu texto y otros apoyos</h2>
-        <p class="panel-subtitle">Herramientas y recursos para mejorar tu escritura</p>
+        <h2 class="panel-title">Asistente de escritura (beta)</h2>
+        <p class="panel-subtitle">Pronto conectado a uno o varios LLMs</p>
       </header>
-      <!-- tabs -->
-      <div class="content">
-
-          <b-nav test1>
-              <b-nav-item
-                data-toggle-target=".tab-content-1"
-                :class="{ 'active': isSelected(0) }"
-                @click="selected = 0">Análisis</b-nav-item>
-              <!-- Concordancia movida a Herramientas -->
-              <!-- Cápsulas tab removed -->
-              <!-- Consulta Procesos movida a Herramientas -->
-              
-          </b-nav>
-        <!--
-        <nav class="tabs__bar tab-btns">
-          <a
-            href="#"
-            class="tab"
-            data-toggle-target=".tab-content-1"
-            :class="{ 'active': isSelected(0) }"
-            @click="selected = 0"
+      <div class="chat">
+        <div class="chat-messages" ref="messages">
+          <div
+            v-for="(m, idx) in messages"
+            :key="idx"
+            :class="['message', m.role]"
           >
-            Análisis
-          </a>
-          <a
-            href="#"
-            class="tab"
-            data-toggle-target=".tab-content-2"
-            :class="{ 'active': isSelected(1) }"
-            @click="selected = 1"
-          >
-            Concordancia
-          </a>
-          <a
-            href="#"
-            class="tab"
-            data-toggle-target=".tab-content-4"
-            :class="{ 'active': isSelected(2) }"
-            @click="selected = 2"
-          >
-            Consulta Procesos
-          </a>
-          <a
-            href="#"
-            class="tab"
-            data-toggle-target=".tab-content-3"
-            :class="{ 'active': isSelected(3) }"
-            @click="selected = 3"
-          >
-            Cápsulas
-          </a>
-        </nav>
-        -->
-        <div class="tabs__content tab-content tab-content-1"
-          v-show="isSelected(0)">
-          <TabRetroalimentacion />
+            <div class="bubble" v-html="m.content"></div>
+          </div>
         </div>
-        <!-- Concordancia movida a Herramientas -->
-        <!-- Cápsulas content removed -->
-
-        <!-- Consulta Procesos movida a Herramientas -->
+        <div class="chat-input">
+          <textarea
+            v-model="input"
+            class="input"
+            placeholder="Escribe tu consulta sobre el texto…"
+            @keydown.enter.exact.prevent="send"
+          ></textarea>
+          <button class="send-btn" :disabled="!canSend" @click="send">
+            Enviar
+          </button>
+        </div>
       </div>
-      <!-- / tabs -->
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex";
-import { Analisis } from "@/includes/constants.js";
-import TabRetroalimentacion from "@/components/TabRetroalimentacion.vue";
 export default {
   name: "PanelDerecho",
-  components: {
-    TabRetroalimentacion,
-  },
   data() {
     return {
-      analisis: Analisis,
-      selected: 0,
+      input: "",
+      messages: [
+        {
+          role: "assistant",
+          content:
+            "Hola, soy tu asistente de escritura. Puedo ayudarte a mejorar tu texto, sugerir reescrituras y responder preguntas. ¿En qué te ayudo?",
+        },
+      ],
     };
   },
   computed: {
-    ...mapActions(["saveAnalysisGroupTab", "saveAnalisisPantalla"]),
-    ...mapGetters({ retroalimentacion: "getRetroalimentacion" }),
+    canSend() {
+      return this.input && this.input.trim().length > 0;
+    },
   },
   methods: {
-    isSelected(i) {
-      return i === this.selected;
+    send() {
+      const text = (this.input || "").trim();
+      if (!text) return;
+      this.messages.push({ role: "user", content: this.escape(text) });
+      this.input = "";
+      this.$nextTick(this.scrollToBottom);
+      // Mock response (placeholder for future LLM integration)
+      setTimeout(() => {
+        const mock = this.generateMock(text);
+        this.messages.push({ role: "assistant", content: mock });
+        this.$nextTick(this.scrollToBottom);
+      }, 500);
     },
+    generateMock(question) {
+      const q = question.length > 160 ? question.slice(0, 160) + "…" : question;
+      return `
+        <div><strong>Respuesta preliminar</strong> (mock):</div>
+        <div>He leído tu consulta: “${this.escape(q)}”.</div>
+        <div>Pronto conectaré con un modelo LLM para darte una sugerencia concreta y referencias.</div>
+      `;
+    },
+    escape(s) {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+    },
+    scrollToBottom() {
+      const el = this.$refs.messages;
+      if (el) el.scrollTop = el.scrollHeight;
+    },
+  },
+  mounted() {
+    this.scrollToBottom();
   },
 };
 </script>
@@ -118,7 +110,7 @@ export default {
 }
 
 .panel-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   flex-shrink: 0;
 }
 
@@ -126,116 +118,109 @@ export default {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .panel-subtitle {
   font-size: 0.875rem;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.4;
 }
 
-.content {
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-messages {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Navigation Tabs */
-.nav {
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 1rem;
-}
-
-.nav-item {
-  margin-right: 0.5rem;
-}
-
-.nav-link {
-  color: var(--text-secondary);
-  font-weight: 500;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  transition: all 0.2s ease;
-  border: none;
-  background: transparent;
-}
-
-.nav-link:hover {
-  color: var(--primary-color);
   background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
 }
 
-.nav-link.active {
-  color: var(--primary-color);
-  background: var(--background-color);
-  border-bottom: 2px solid var(--primary-color);
+.message {
+  display: flex;
+  margin-bottom: 0.5rem;
 }
 
-/* Tab Content */
-.tabs__content {
-  padding: 1rem 0;
+.message.user {
+  justify-content: flex-end;
 }
 
-.tabs__content.active {
-  display: block;
+.message.assistant {
+  justify-content: flex-start;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-  
-  .panel-title {
-    font-size: 1.125rem;
-  }
-  
-  .panel-subtitle {
-    font-size: 0.8125rem;
-  }
-  
-  .nav-link {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.875rem;
-  }
+.bubble {
+  max-width: 85%;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 480px) {
-  .container {
-    padding: 0.75rem;
-  }
-  
-  .panel-title {
-    font-size: 1rem;
-  }
-  
-  .panel-header {
-    margin-bottom: 1rem;
-  }
-  
-  .nav-link {
-    padding: 0.5rem;
-    font-size: 0.8125rem;
-  }
+.message.user .bubble {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.input {
+  flex: 1;
+  min-height: 44px;
+  max-height: 140px;
+  resize: vertical;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.send-btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--primary-color);
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.send-btn:hover:enabled {
+  filter: brightness(0.98);
+  transform: translateY(-1px);
+}
+
+.send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Scrollbar */
-.content::-webkit-scrollbar {
-  width: 4px;
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
 }
-
-.content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.content::-webkit-scrollbar-thumb {
+.chat-messages::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 2px;
-}
-
-.content::-webkit-scrollbar-thumb:hover {
-  background: var(--secondary-color);
+  border-radius: 3px;
 }
 </style>
