@@ -93,6 +93,7 @@
 </template>
 
 <script>
+import { runPromptBatch } from "@/api/llm.js";
 export default {
   name: "PromptingLab",
   data() {
@@ -170,27 +171,78 @@ export default {
         default: return 'En espera';
       }
     },
-    buildContext() {
-      // Construye contexto completo (string) según toggles
+    buildContextPreview() {
+      // Construye vista previa como string
       return this.contextPreview;
     },
+    buildContextPayload() {
+      // Construye contexto estructurado para backend
+      const s = this.$store.state || {};
+      const ctx = {};
+      if (this.ctx.includeStatistics && s.estadisticasGenerales) {
+        ctx.statistics = s.estadisticasGenerales;
+      }
+      if (this.ctx.includeEditorText && s.textoEditor) {
+        ctx.editorText = s.textoEditor;
+      }
+      if (this.ctx.includeSections) {
+        ctx.sections = {
+          gerundios: s.gerundios?.html || null,
+          oraciones: s.oraciones?.html || null,
+          parrafos: s.parrafos?.html || null,
+          persona: s.persona?.html || null,
+          vozPasiva: s.vozPasiva?.html || null,
+          conectores: s.conectores?.html || null,
+          complejidad: s.complejidad?.html || null,
+          lecturabilidad: s.lecturabilidad?.html || null,
+          proposito: s.proposito?.html || null,
+        };
+      }
+      return ctx;
+    },
     async runAll() {
-      const ctx = this.buildContext();
+      const ctxPreview = this.buildContextPreview();
+      const ctxPayload = this.buildContextPayload();
       const models = [...this.selectedModels];
       models.forEach(m => {
         this.$set(this.runStatus, m, 'running');
         this.$set(this.results, m, '');
       });
-      // Ejecuta "en paralelo" (mock). Aquí se conectaría a un backend para cada modelo.
-      await Promise.all(models.map(async (model) => {
-        try {
-          const answer = await this.generateMockAnswer(model, this.prompt, ctx, this.params);
-          this.$set(this.results, model, answer);
-          this.$set(this.runStatus, model, 'done');
-        } catch (e) {
-          this.$set(this.runStatus, model, 'error');
-        }
-      }));
+      // Intento vía backend
+      try {
+        const response = await runPromptBatch({
+          prompt: this.prompt,
+          models,
+          params: this.params,
+          context: ctxPayload,
+        });
+        // Respuesta esperada: { results: { [model]: { content: string } }, errors?: { [model]: { message, code } } }
+        const results = response?.results || {};
+        const errors = response?.errors || {};
+        models.forEach((model) => {
+          if (results[model]?.content) {
+            this.$set(this.results, model, this.escape(results[model].content).replace(/\n/g, "<br>"));
+            this.$set(this.runStatus, model, 'done');
+          } else if (errors[model]) {
+            this.$set(this.results, model, this.escape(`Error: ${errors[model].message || 'Sin detalle'}`));
+            this.$set(this.runStatus, model, 'error');
+          } else {
+            this.$set(this.results, model, this.escape("Sin respuesta del backend."));
+            this.$set(this.runStatus, model, 'error');
+          }
+        });
+      } catch (err) {
+        // Fallback a mock por modelo
+        await Promise.all(models.map(async (model) => {
+          try {
+            const answer = await this.generateMockAnswer(model, this.prompt, ctxPreview, this.params);
+            this.$set(this.results, model, answer);
+            this.$set(this.runStatus, model, 'done');
+          } catch (e) {
+            this.$set(this.runStatus, model, 'error');
+          }
+        }));
+      }
     },
     async generateMockAnswer(model, prompt, context, params) {
       // Simula latencia variable
