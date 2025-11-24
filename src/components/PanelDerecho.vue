@@ -13,36 +13,9 @@
                 data-toggle-target=".tab-content-1"
                 :class="{ 'active': isSelected(0) }"
                 @click="selected = 0">Análisis</b-nav-item>
-              <b-nav-item
-                      data-toggle-target=".tab-content-2"
-                      :class="{ 'active': isSelected(1) }"
-                      @click="selected = 1" >Concordancia</b-nav-item>
+              <!-- Concordancia movida a Herramientas -->
               <!-- Cápsulas tab removed -->
-              <b-nav-dropdown
-                      id="dropdown_test"
-                      text="Consulta Procesos"
-                      toggle-class="nav-link-custom"
-                      right
-              >
-                  <b-dropdown-item
-                          data-toggle-target=".tab-content-4"
-                          :class="{ 'active': isSelected(4) }"
-                          @click="selected = 4"
-                  >Conceptualización</b-dropdown-item>
-                  <b-dropdown-item data-toggle-target=".tab-content-5"
-                                   :class="{ 'active': isSelected(5) }"
-                                   @click="selected = 5"
-                  >Ideación</b-dropdown-item>
-                  <b-dropdown-item data-toggle-target=".tab-content-6"
-                                   :class="{ 'active': isSelected(6) }"
-                                   @click="selected = 6"
-                  >Transcripción Traducción</b-dropdown-item>
-                  <b-dropdown-item data-toggle-target=".tab-content-7"
-                                   :class="{ 'active': isSelected(7) }"
-                                   @click="selected = 7"
-                  >Traducción Reconceptualización</b-dropdown-item>
-
-              </b-nav-dropdown>
+              <!-- Consulta Procesos movida a Herramientas -->
               
           </b-nav>
         <!--
@@ -89,38 +62,10 @@
           v-show="isSelected(0)">
           <TabRetroalimentacion />
         </div>
-        <div
-          class="tabs__content tab-content tab-content-2"
-          v-show="isSelected(1)"
-        >
-          <TabConcordancia />
-        </div>
+        <!-- Concordancia movida a Herramientas -->
         <!-- Cápsulas content removed -->
 
-        <div
-                class="tabs__content tab-content tab-content-4"
-                v-show="isSelected(4)"
-        >
-            <tabConceptualizacion />
-        </div>
-        <div
-                class="tabs__content tab-content tab-content-5"
-                v-show="isSelected(5)"
-        >
-            <tabIdeacion />
-        </div>
-          <div
-                  class="tabs__content tab-content tab-content-6"
-                  v-show="isSelected(6)"
-          >
-              <tabTranscripcion />
-          </div>
-          <div
-                  class="tabs__content tab-content tab-content-7"
-                  v-show="isSelected(7)"
-          >
-              <tabReconceptualizacion />
-          </div>
+        <!-- Consulta Procesos movida a Herramientas -->
       </div>
       <!-- / tabs -->
     </div>
@@ -131,21 +76,10 @@
 import { mapActions, mapGetters } from "vuex";
 import { Analisis } from "@/includes/constants.js";
 import TabRetroalimentacion from "@/components/TabRetroalimentacion.vue";
-import TabConcordancia from "@/components/TabConcordancia.vue";
-
-import tabConceptualizacion from "./TabConceptualizacion.vue";
-import tabIdeacion from "./TabIdeacion.vue";
-import tabTranscripcion from "./TabTranscripcion.vue";
-import tabReconceptualizacion from "./TabReconceptualizacion.vue";
 export default {
   name: "PanelDerecho",
   components: {
     TabRetroalimentacion,
-    TabConcordancia,
-      tabConceptualizacion,
-      tabIdeacion,
-      tabTranscripcion,
-      tabReconceptualizacion,
   },
   data() {
     return {

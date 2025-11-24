@@ -31,6 +31,7 @@
       <div class="footer-content">
         <p class="footer-text">PEUMO v2.0</p>
         <p class="footer-subtitle">Análisis Inteligente</p>
+        <router-link to="/herramientas" class="tools-link">Herramientas</router-link>
       </div>
     </div>
   </div>
@@ -175,6 +176,18 @@ export default {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin: 0;
+}
+
+.tools-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tools-link:hover {
+  text-decoration: underline;
 }
 
 /* Scrollbar */
