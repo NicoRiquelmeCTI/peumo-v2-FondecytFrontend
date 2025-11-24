@@ -32,6 +32,7 @@
         <p class="footer-text">PEUMO v2.0</p>
         <p class="footer-subtitle">Análisis Inteligente</p>
         <router-link to="/herramientas" class="tools-link">Herramientas</router-link>
+        <router-link to="/prompting-lab" class="tools-link">Prompting Lab</router-link>
       </div>
     </div>
   </div>
