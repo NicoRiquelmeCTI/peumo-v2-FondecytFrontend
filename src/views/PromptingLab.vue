@@ -19,10 +19,23 @@
       <aside class="plab-sidebar">
         <div class="section">
           <h3 class="section-title">Modelos</h3>
-          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="gpt-4.1" /> gpt-4.1</label>
-          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="gpt-4o-mini" /> gpt-4o-mini</label>
-          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="claude-3.5-sonnet" /> claude-3.5-sonnet</label>
-          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="llama-3.1-70b" /> llama-3.1-70b</label>
+          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="openai/gpt-oss-20b:free" /> openai/gpt-oss-20b (free)</label>
+          <label class="checkbox"><input type="checkbox" v-model="selectedModels" value="x-ai/grok-4.1-fast:free" /> x-ai/grok-4.1-fast (free)</label>
+          <div class="custom-models">
+            <input
+              class="custom-input"
+              v-model="customModelInput"
+              placeholder="vendor/model-id[:tier]"
+            />
+            <button class="custom-add" @click="addCustomModel">Agregar</button>
+          </div>
+          <div v-if="customModels.length" class="custom-list">
+            <div class="custom-title">Modelos personalizados</div>
+            <label class="checkbox" v-for="cm in customModels" :key="cm">
+              <input type="checkbox" v-model="selectedModels" :value="cm" />
+              {{ cm }}
+            </label>
+          </div>
         </div>
 
         <div class="section">
@@ -30,6 +43,10 @@
           <label class="checkbox"><input type="checkbox" v-model="ctx.includeStatistics" /> Estadísticas generales</label>
           <label class="checkbox"><input type="checkbox" v-model="ctx.includeSections" /> Secciones (HTML)</label>
           <label class="checkbox"><input type="checkbox" v-model="ctx.includeEditorText" /> Texto del editor</label>
+          <div style="margin-top:0.5rem;">
+            <label class="checkbox"><input type="radio" value="compact" v-model="ctx.format" /> Formato compacto</label>
+            <label class="checkbox"><input type="radio" value="extracts" v-model="ctx.format" /> Extractos</label>
+          </div>
         </div>
 
         <div class="section">
@@ -75,10 +92,10 @@
                 </span>
               </div>
               <div class="result-body">
-                <div v-if="runStatus[m] === 'idle'" class="placeholder">Selecciona Ejecutar para correr este modelo.</div>
-                <div v-else-if="runStatus[m] === 'running'" class="loading">Generando respuesta...</div>
+                <div v-if="runStatus[m] === 'running'" class="loading">Generando respuesta...</div>
+                <div v-else-if="results[m]" class="answer" v-html="results[m]"></div>
                 <div v-else-if="runStatus[m] === 'error'" class="error">Ocurrió un error generando la respuesta.</div>
-                <div v-else class="answer" v-html="results[m]"></div>
+                <div v-else class="placeholder">Selecciona Ejecutar para correr este modelo.</div>
               </div>
               <div class="result-actions">
                 <button class="small" :disabled="!results[m]" @click="copyResult(m)">Copiar</button>
@@ -99,7 +116,7 @@ export default {
   data() {
     return {
       prompt: "",
-      selectedModels: ["gpt-4o-mini"],
+      selectedModels: [],
       params: {
         temperature: 0.7,
         maxTokens: 1024
@@ -107,10 +124,13 @@ export default {
       ctx: {
         includeStatistics: true,
         includeSections: false,
-        includeEditorText: false
+        includeEditorText: false,
+        format: "compact" // 'compact' | 'extracts'
       },
       runStatus: {}, // model -> 'idle' | 'running' | 'done' | 'error'
-      results: {} // model -> html
+      results: {}, // model -> html
+      customModelInput: "",
+      customModels: JSON.parse(localStorage.getItem('peumo.plab.customModels') || "[]")
     };
   },
   computed: {
@@ -123,12 +143,16 @@ export default {
     contextPreview() {
       const s = this.$store.state || {};
       const parts = [];
-      if (this.ctx.includeStatistics && s.estadisticasGenerales) {
-        parts.push(`# Estadísticas\n${JSON.stringify(s.estadisticasGenerales).slice(0, 1500)}${JSON.stringify(s.estadisticasGenerales).length > 1500 ? '…' : ''}`);
+      // Estadísticas (resumen legible)
+      if (this.ctx.includeStatistics && s.estadisticasGenerales && s.estadisticasGenerales.analysis) {
+        const a = s.estadisticasGenerales.analysis;
+        const lines = [];
+        if (typeof a.total_words !== "undefined") lines.push(`- Palabras: ${a.total_words}`);
+        if (typeof a.total_sentences !== "undefined") lines.push(`- Oraciones: ${a.total_sentences}`);
+        if (typeof a.paragraphs !== "undefined") lines.push(`- Párrafos: ${a.paragraphs}`);
+        parts.push(`# Estadísticas\n${lines.join('\n') || '(sin métricas)'}`);
       }
-      if (this.ctx.includeEditorText && s.textoEditor) {
-        parts.push(`# Texto del editor\n${String(s.textoEditor).slice(0, 1500)}${String(s.textoEditor).length > 1500 ? '…' : ''}`);
-      }
+      // Secciones (modo compacto o extractos)
       if (this.ctx.includeSections) {
         const sec = [
           ["Gerundios", s.gerundios],
@@ -141,19 +165,69 @@ export default {
           ["Lecturabilidad", s.lecturabilidad],
           ["Propósito", s.proposito],
         ];
-        const htmlSnippets = sec
-          .filter(([, v]) => v && v.html)
-          .map(([k, v]) => `## ${k}\n${String(v.html).replace(/<[^>]+>/g, '').slice(0, 800)}${String(v.html).length > 800 ? '…' : ''}`);
-        if (htmlSnippets.length) {
-          parts.push(`# Secciones\n${htmlSnippets.join('\n\n')}`);
+        const recs = {
+          "Gerundios": "Evita gerundios repetidos; prefiere verbos conjugados y conectores.",
+          "Oraciones": "Evita oraciones demasiado largas o cortas; usa puntuación y conectores.",
+          "Párrafos": "Mantén 3–5 oraciones por párrafo con una idea central.",
+          "Persona": "Prefiere tercera persona/voz impersonal para informes.",
+          "Voz Pasiva": "Reduce voz pasiva en exceso; usa voz activa cuando aporte claridad.",
+          "Conectores": "Asegura conectores adecuados y evita repetición.",
+          "Complejidad": "Acerca el verbo al primer cuarto de la oración; simplifica el inicio.",
+          "Lecturabilidad": "Ajusta longitud de palabras/frases al rango recomendado.",
+          "Propósito": "Alinea el contenido con el propósito de la sección (introducción, resultados, etc.)."
+        };
+        const compactLine = (k, v) => {
+          const flag = typeof v?.error !== "undefined" ? (v.error ? "Problemas" : "OK") : "N/D";
+          const count = this.sectionErrorCount(k, v);
+          const reco = recs[k] ? ` – ${recs[k]}` : "";
+          const extras = count !== null ? ` (errores: ${count})` : "";
+          return `## ${k}\nIndicador: ${flag}${extras}${reco}`;
+        };
+        const blocks = sec.map(([k, v]) => {
+          if (!v) return null;
+          if (this.ctx.format === "compact") {
+            return compactLine(k, v);
+          } else {
+            const flag = typeof v.error !== "undefined" ? v.error : null;
+            const txt = v.html ? String(v.html).replace(/<[^>]+>/g, '') : '';
+            const snippet = txt ? (txt.slice(0, 400) + (txt.length > 400 ? '…' : '')) : '';
+            const lineFlag = flag === null ? '' : `\nIndicador: ${flag ? 'Problemas detectados' : 'Sin problemas'}`;
+            const reco = recs[k] ? `\nRecomendación: ${recs[k]}` : '';
+            return `## ${k}${lineFlag}${reco}${snippet ? `\nExtracto: ${snippet}` : ''}`;
+          }
+        }).filter(Boolean);
+        if (blocks.length) {
+          parts.push(`# Secciones\n${blocks.join('\n\n')}`);
+        }
+      }
+      // Texto del editor: si ya incluimos secciones (que suelen derivar del texto), evita duplicar
+      if (this.ctx.includeEditorText && s.textoEditor) {
+        if (!this.ctx.includeSections) {
+          parts.push(`# Texto del editor\n${String(s.textoEditor).slice(0, 1500)}${String(s.textoEditor).length > 1500 ? '…' : ''}`);
+        } else {
+          parts.push(`# Texto del editor\n(adjuntado en payload, omitido aquí para evitar duplicación)`);
         }
       }
       return parts.join('\n\n') || 'Sin contexto seleccionado.';
-    }
+    },
   },
   methods: {
     copyPrompt() {
       navigator.clipboard.writeText(this.prompt).catch(() => {});
+    },
+    addCustomModel() {
+      const val = (this.customModelInput || "").trim();
+      if (!val) return;
+      if (!this.customModels.includes(val)) {
+        this.customModels.push(val);
+        try {
+          localStorage.setItem('peumo.plab.customModels', JSON.stringify(this.customModels));
+        } catch (e) { void 0; }
+      }
+      if (!this.selectedModels.includes(val)) {
+        this.selectedModels.push(val);
+      }
+      this.customModelInput = "";
     },
     statusClass(st) {
       return {
@@ -175,39 +249,133 @@ export default {
       // Construye vista previa como string
       return this.contextPreview;
     },
+    sectionErrorCount(name, section) {
+      try {
+        switch (name) {
+          case "Gerundios":
+            return section?.tiposRetroalimentacion?.gerundiosExcesivos?.nro_errores ?? null;
+          case "Oraciones":
+            return (section?.tiposRetroalimentacion?.oracionesExtensas?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.oracionesBreves?.nro_errores ?? 0);
+          case "Párrafos":
+            return (section?.tiposRetroalimentacion?.parrafosExtensos?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.parrafosBreves?.nro_errores ?? 0);
+          case "Persona":
+            return (section?.tiposRetroalimentacion?.primeraPersonaSingular?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.segundaPersonaSingular?.nro_errores ?? 0);
+          case "Voz Pasiva":
+            return section?.tiposRetroalimentacion?.vozPasiva?.nro_errores ?? null;
+          case "Conectores":
+            return (section?.tiposRetroalimentacion?.ausenciaConectores?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.conectoresRepetidos?.nro_errores ?? 0);
+          case "Complejidad":
+            return section?.tiposRetroalimentacion?.complejidad?.nro_errores ?? null;
+          case "Lecturabilidad":
+            // sumatoria de categorías si existieran
+            return (section?.tiposRetroalimentacion?.dificil?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.algoDificil?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.normal?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.algoFacil?.nro_errores ?? 0)
+              + (section?.tiposRetroalimentacion?.facil?.nro_errores ?? 0);
+          case "Propósito":
+            return null; // opcional según tus datos
+          default:
+            return null;
+        }
+      } catch {
+        return null;
+      }
+    },
     buildContextPayload() {
       // Construye contexto estructurado para backend
       const s = this.$store.state || {};
-      const ctx = {};
+      const ctx = { schemaVersion: 2 };
+      const MAX_EDITOR_CHARS = 2000; // limita texto del editor
+      const MAX_SECTION_CHARS = 1200; // por sección en modo extractos
+      const stripHtml = (t) => String(t || "").replace(/<[^>]+>/g, '');
+      const truncate = (t, n) => {
+        const str = String(t || "");
+        return str.length > n ? (str.slice(0, n) + '…') : str;
+      };
       if (this.ctx.includeStatistics && s.estadisticasGenerales) {
         ctx.statistics = s.estadisticasGenerales;
       }
-      if (this.ctx.includeEditorText && s.textoEditor) {
-        ctx.editorText = s.textoEditor;
-      }
+      // Evitar duplicar: si se incluyen secciones, no enviar texto completo del editor
+      // En su lugar, enviar un snippet pequeño solo en formato compacto
       if (this.ctx.includeSections) {
-        ctx.sections = {
-          gerundios: s.gerundios?.html || null,
-          oraciones: s.oraciones?.html || null,
-          parrafos: s.parrafos?.html || null,
-          persona: s.persona?.html || null,
-          vozPasiva: s.vozPasiva?.html || null,
-          conectores: s.conectores?.html || null,
-          complejidad: s.complejidad?.html || null,
-          lecturabilidad: s.lecturabilidad?.html || null,
-          proposito: s.proposito?.html || null,
-        };
+        if (this.ctx.format === "compact") {
+          // Solo indicadores y conteos
+          ctx.sectionSummary = {
+            gerundios: { flag: s.gerundios?.error ?? null, errors: this.sectionErrorCount("Gerundios", s.gerundios) },
+            oraciones: { flag: s.oraciones?.error ?? null, errors: this.sectionErrorCount("Oraciones", s.oraciones) },
+            parrafos: { flag: s.parrafos?.error ?? null, errors: this.sectionErrorCount("Párrafos", s.parrafos) },
+            persona: { flag: s.persona?.error ?? null, errors: this.sectionErrorCount("Persona", s.persona) },
+            vozPasiva: { flag: s.vozPasiva?.error ?? null, errors: this.sectionErrorCount("Voz Pasiva", s.vozPasiva) },
+            conectores: { flag: s.conectores?.error ?? null, errors: this.sectionErrorCount("Conectores", s.conectores) },
+            complejidad: { flag: s.complejidad?.error ?? null, errors: this.sectionErrorCount("Complejidad", s.complejidad) },
+            lecturabilidad: { flag: s.lecturabilidad?.error ?? null, errors: this.sectionErrorCount("Lecturabilidad", s.lecturabilidad) },
+            proposito: { flag: s.proposito?.error ?? null, errors: this.sectionErrorCount("Propósito", s.proposito) },
+          };
+          if (this.ctx.includeEditorText && s.textoEditor) {
+            ctx.editorTextSnippet = truncate(s.textoEditor, MAX_EDITOR_CHARS);
+          }
+        } else {
+          // Extractos HTML (legacy)
+          const sec = {
+            gerundios: s.gerundios?.html,
+            oraciones: s.oraciones?.html,
+            parrafos: s.parrafos?.html,
+            persona: s.persona?.html,
+            vozPasiva: s.vozPasiva?.html,
+            conectores: s.conectores?.html,
+            complejidad: s.complejidad?.html,
+            lecturabilidad: s.lecturabilidad?.html,
+            proposito: s.proposito?.html,
+          };
+          // Strip HTML y trunca cada sección, eliminando nulos
+          const cleaned = {};
+          Object.keys(sec).forEach(k => {
+            if (sec[k]) {
+              const txt = stripHtml(sec[k]);
+              cleaned[k] = truncate(txt, MAX_SECTION_CHARS);
+            }
+          });
+          ctx.sections = cleaned;
+          // No incluir editorText cuando ya adjuntamos extractos para evitar duplicación
+        }
+      } else if (this.ctx.includeEditorText && s.textoEditor) {
+        // Si no hay secciones, incluir texto del editor (truncado)
+        ctx.editorText = truncate(s.textoEditor, MAX_EDITOR_CHARS);
       }
       return ctx;
     },
     async runAll() {
-      const ctxPreview = this.buildContextPreview();
       const ctxPayload = this.buildContextPayload();
       const models = [...this.selectedModels];
       models.forEach(m => {
         this.$set(this.runStatus, m, 'running');
         this.$set(this.results, m, '');
       });
+      // Logs de diagnóstico
+      try {
+        const approx = JSON.stringify(ctxPayload).length;
+        const editorLen = (ctxPayload.editorText || ctxPayload.editorTextSnippet || "").length || 0;
+        const sectionKeys = ctxPayload.sections ? Object.keys(ctxPayload.sections) : [];
+        const sectionCharSum = sectionKeys.reduce((acc, k) => acc + String(ctxPayload.sections[k] || "").length, 0);
+        // eslint-disable-next-line no-console
+        console.log("[PromptingLab] Context payload", {
+          approxBytes: approx,
+          hasStatistics: !!ctxPayload.statistics,
+          hasSectionSummary: !!ctxPayload.sectionSummary,
+          sectionKeys,
+          sectionCharSum,
+          editorChars: editorLen,
+          format: this.ctx.format
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log("[PromptingLab] Context log error", e);
+      }
       // Intento vía backend
       try {
         const response = await runPromptBatch({
@@ -219,12 +387,15 @@ export default {
         // Respuesta esperada: { results: { [model]: { content: string } }, errors?: { [model]: { message, code } } }
         const results = response?.results || {};
         const errors = response?.errors || {};
+        await this.ensureMarked();
         models.forEach((model) => {
           if (results[model]?.content) {
-            this.$set(this.results, model, this.escape(results[model].content).replace(/\n/g, "<br>"));
+            const html = this.renderMarkdown(results[model].content);
+            this.$set(this.results, model, html);
             this.$set(this.runStatus, model, 'done');
           } else if (errors[model]) {
-            this.$set(this.results, model, this.escape(`Error: ${errors[model].message || 'Sin detalle'}`));
+            const md = this.formatErrorMarkdown(model, errors[model]);
+            this.$set(this.results, model, this.renderMarkdown(md));
             this.$set(this.runStatus, model, 'error');
           } else {
             this.$set(this.results, model, this.escape("Sin respuesta del backend."));
@@ -232,29 +403,87 @@ export default {
           }
         });
       } catch (err) {
-        // Fallback a mock por modelo
-        await Promise.all(models.map(async (model) => {
-          try {
-            const answer = await this.generateMockAnswer(model, this.prompt, ctxPreview, this.params);
-            this.$set(this.results, model, answer);
-            this.$set(this.runStatus, model, 'done');
-          } catch (e) {
-            this.$set(this.runStatus, model, 'error');
-          }
-        }));
+        // Sin fallback mock: mostrar error para cada modelo
+        models.forEach((model) => {
+          this.$set(this.results, model, this.escape("Error al conectar con el backend."));
+          this.$set(this.runStatus, model, 'error');
+        });
       }
     },
-    async generateMockAnswer(model, prompt, context, params) {
-      // Simula latencia variable
-      const ms = 400 + Math.floor(Math.random() * 900);
-      await new Promise(r => setTimeout(r, ms));
-      const ctxNote = this.hasAnyContext ? ' (con contexto)' : '';
-      const safePrompt = prompt.length > 300 ? prompt.slice(0, 300) + '…' : prompt;
-      return `
-        <div><strong>${model}</strong>${ctxNote}:</div>
-        <div>Prompt: ${this.escape(safePrompt)}</div>
-        <div style="margin-top:6px;">Respuesta simulada. temperature=${params.temperature}, maxTokens=${params.maxTokens}.</div>
-      `;
+    ensureMarked() {
+      return new Promise((resolve, reject) => {
+        if (window.marked && window.marked.parse) return resolve(window.marked);
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        script.async = true;
+        script.onload = () => resolve(window.marked);
+        script.onerror = () => reject(new Error("No se pudo cargar marked"));
+        document.head.appendChild(script);
+      });
+    },
+    renderMarkdown(text) {
+      try {
+        if (window.marked && window.marked.parse) {
+          return window.marked.parse(String(text || ""));
+        }
+      } catch (e) {
+        void 0;
+      }
+      // Fallback mínimo
+      return this.escape(String(text || "")).replace(/\n/g, "<br>");
+    },
+    formatErrorMarkdown(model, err) {
+      const info = typeof err === "object" && err ? err : { message: String(err) };
+      const lines = [
+        `### Error en ${model}`,
+        info.code ? `- code: ${info.code}` : null,
+        info.status ? `- status: ${info.status}` : null,
+        info.provider ? `- provider: ${info.provider}` : null,
+        info.message ? `- message: ${info.message}` : null
+      ].filter(Boolean);
+      // Extrae JSON embebido en message (caso OpenRouter)
+      const embedded = this.extractJsonFromString(info.message || "");
+      const raw =
+        info.raw ||
+        info.body ||
+        info.responseBody ||
+        info.text ||
+        info.details ||
+        (embedded ? embedded : null);
+      let rawBlock = "";
+      if (raw) {
+        try {
+          const maybeObj = typeof raw === "string" ? JSON.parse(raw) : raw;
+          rawBlock = `\n\n\`\`\`json\n${JSON.stringify(maybeObj, null, 2)}\n\`\`\``;
+        } catch {
+          rawBlock = `\n\n\`\`\`\n${String(raw)}\n\`\`\``;
+        }
+      } else {
+        rawBlock = `\n\n#### Detalle\n\`\`\`json\n${JSON.stringify(info, null, 2)}\n\`\`\``;
+      }
+      // Sugerencias si es 429 (rate limit)
+      const codeNum =
+        (typeof info.status === "number" && info.status) ||
+        (embedded && embedded.error && embedded.error.code) ||
+        null;
+      const tip = (codeNum === 429 || /429/.test(String(info.message || "")))
+        ? "\n\n> Sugerencia: El proveedor está rate-limited. Reintenta luego o agrega tu propia key en OpenRouter: <https://openrouter.ai/settings/integrations>"
+        : "";
+      return `${lines.join("\n")}${rawBlock}${tip}`;
+    },
+    extractJsonFromString(str) {
+      try {
+        if (!str || typeof str !== "string") return null;
+        const start = str.indexOf("{");
+        const end = str.lastIndexOf("}");
+        if (start !== -1 && end !== -1 && end > start) {
+          const slice = str.slice(start, end + 1);
+          return JSON.parse(slice);
+        }
+        return null;
+      } catch (e) {
+        return null;
+      }
     },
     copyResult(model) {
       const plain = this.results[model] ? this.results[model].replace(/<[^>]+>/g, '') : '';
@@ -353,6 +582,7 @@ export default {
   border-right: 1px solid var(--border-color);
   padding: 1rem;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .plab-main {
   min-width: 0;
@@ -379,6 +609,39 @@ export default {
   margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
+.custom-models {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+.custom-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--background-color);
+  color: var(--text-primary);
+  min-width: 0; /* permite que el input en flex se encoja y no desborde */
+}
+.custom-add {
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--primary-color);
+  background: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+.custom-list {
+  margin-top: 0.5rem;
+}
+.custom-title {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
 .field {
   display: flex;
   align-items: center;
@@ -388,6 +651,11 @@ export default {
 }
 .field input {
   width: 120px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--background-color);
+  color: var(--text-primary);
 }
 .prompt-input {
   width: 100%;
