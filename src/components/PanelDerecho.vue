@@ -63,16 +63,6 @@
                   </label>
                 </div>
                 <div class="settings-row">
-                  <label for="chat-model" class="toggle">Modelo</label>
-                  <select id="chat-model" class="model-select" v-model="selectedModel" @change="persistModel">
-                    <option value="llama-3.1-8b">llama-3.1-8b</option>
-                    <option value="qwen-2.5-7b">qwen-2.5-7b</option>
-                    <option value="gemma-2-9b-it">gemma-2-9b-it</option>
-                    <option value="mistral-7b-instruct">mistral-7b-instruct</option>
-                    <option value="gpt-4o-mini">gpt-4o-mini</option>
-                  </select>
-                </div>
-                <div class="settings-row">
                   <button class="download-btn" :disabled="!hasAnalysis" @click="downloadAnalysisJson">
                     Descargar análisis (JSON)
                   </button>
@@ -118,9 +108,7 @@ export default {
       attachAnalysis: false,
       isLoading: false,
       typingTimer: null,
-      selectedModel: typeof localStorage !== 'undefined'
-        ? (localStorage.getItem('peumo.chat.model') || 'llama-3.1-8b')
-        : 'llama-3.1-8b',
+      selectedModel: 'x-ai/grok-4.1-fast:free',
     };
   },
   computed: {
@@ -189,7 +177,7 @@ export default {
       this.isLoading = true;
       this.messages.push({ role: "assistant", content: "" });
       const assistantIndex = this.messages.length - 1;
-      const models = [this.selectedModel || "llama-3.1-8b"];
+      const models = ["x-ai/grok-4.1-fast:free"];
       const params = { temperature: 0.7, maxTokens: 512 };
       const context = this.attachAnalysis && this.hasAnalysis ? this.buildContextPayload() : {};
       runPromptBatch({
@@ -242,13 +230,7 @@ export default {
       const interval = 25;
       this.typingTimer = setInterval(step, interval);
     },
-    persistModel() {
-      try {
-        localStorage.setItem('peumo.chat.model', this.selectedModel || "");
-      } catch (e) {
-        void 0;
-      }
-    },
+    persistModel() { /* fixed model: noop */ },
     generateMock(question) {
       const q = question.length > 160 ? question.slice(0, 160) + "…" : question;
       const attachInfo = this.attachAnalysis && this.hasAnalysis
