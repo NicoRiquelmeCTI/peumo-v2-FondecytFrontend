@@ -40,13 +40,31 @@
 
         <div class="section">
           <h3 class="section-title">Contexto a adjuntar</h3>
-          <label class="checkbox"><input type="checkbox" v-model="ctx.includeStatistics" /> Estadísticas generales</label>
-          <label class="checkbox"><input type="checkbox" v-model="ctx.includeSections" /> Secciones (HTML)</label>
           <label class="checkbox"><input type="checkbox" v-model="ctx.includeEditorText" /> Texto del editor</label>
-          <div style="margin-top:0.5rem;">
-            <label class="checkbox"><input type="radio" value="compact" v-model="ctx.format" /> Formato compacto</label>
-            <label class="checkbox"><input type="radio" value="extracts" v-model="ctx.format" /> Extractos</label>
+          
+          <div class="subsection-title">Secciones a incluir</div>
+          <div class="settings-matrix">
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.gerundios" /> Gerundios</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.oraciones" /> Oraciones</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.parrafos" /> Párrafos</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.persona" /> Persona</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.vozPasiva" /> Voz Pasiva</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.conectores" /> Conectores</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.complejidad" /> Complejidad</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.lecturabilidad" /> Lecturabilidad</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachSections.proposito" /> Propósito</label>
           </div>
+          
+          <div class="subsection-title">Campos de tipos de retroalimentación</div>
+          <div class="settings-matrix">
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.feedbackTitle" /> feedbackTitle</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.feedbackComment" /> feedbackComment</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.negativeFeedback" /> negativeFeedback</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.errorExample" /> errorExample</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.errorCorrection" /> errorCorrection</label>
+            <label class="checkbox-item"><input type="checkbox" v-model="attachTipoFields.errorComment" /> errorComment</label>
+          </div>
+          <p class="context-note">Nota: Solo se incluirán tipos de retroalimentación con errores detectados (nro_errores > 0). Los extractos HTML de errores se incluyen automáticamente.</p>
         </div>
 
         <div class="section">
@@ -78,6 +96,8 @@
           <details class="context-preview" v-if="hasAnyContext">
             <summary>Vista previa del contexto que se adjuntará</summary>
             <pre class="context-block">{{ contextPreview }}</pre>
+            <div class="subsection-title">Payload JSON</div>
+            <pre class="context-block">{{ contextPayloadJson }}</pre>
           </details>
         </section>
 
@@ -122,15 +142,32 @@ export default {
         maxTokens: 1024
       },
       ctx: {
-        includeStatistics: true,
-        includeSections: false,
-        includeEditorText: false,
-        format: "compact" // 'compact' | 'extracts'
+        includeEditorText: false
       },
       runStatus: {}, // model -> 'idle' | 'running' | 'done' | 'error'
       results: {}, // model -> html
       customModelInput: "",
-      customModels: JSON.parse(localStorage.getItem('peumo.plab.customModels') || "[]")
+      customModels: JSON.parse(localStorage.getItem('peumo.plab.customModels') || "[]"),
+      attachSections: {
+        gerundios: true,
+        oraciones: true,
+        parrafos: true,
+        persona: true,
+        vozPasiva: true,
+        conectores: true,
+        complejidad: true,
+        lecturabilidad: true,
+        proposito: true,
+      },
+      attachTipoFields: {
+        feedbackTitle: false,
+        feedbackComment: false,
+        negativeFeedback: false,
+        errorExample: false,
+        errorCorrection: false,
+        errorComment: false,
+        nro_errores: false,
+      }
     };
   },
   computed: {
@@ -138,78 +175,85 @@ export default {
       return this.prompt && this.prompt.trim().length > 0 && this.selectedModels.length > 0;
     },
     hasAnyContext() {
-      return this.ctx.includeStatistics || this.ctx.includeSections || this.ctx.includeEditorText;
+      // Verificar si hay secciones seleccionadas o texto del editor
+      const hasSections = Object.values(this.attachSections).some(Boolean);
+      return hasSections || this.ctx.includeEditorText;
     },
     contextPreview() {
       const s = this.$store.state || {};
       const parts = [];
-      // Estadísticas (resumen legible)
-      if (this.ctx.includeStatistics && s.estadisticasGenerales && s.estadisticasGenerales.analysis) {
-        const a = s.estadisticasGenerales.analysis;
-        const lines = [];
-        if (typeof a.total_words !== "undefined") lines.push(`- Palabras: ${a.total_words}`);
-        if (typeof a.total_sentences !== "undefined") lines.push(`- Oraciones: ${a.total_sentences}`);
-        if (typeof a.paragraphs !== "undefined") lines.push(`- Párrafos: ${a.paragraphs}`);
-        parts.push(`# Estadísticas\n${lines.join('\n') || '(sin métricas)'}`);
-      }
-      // Secciones (modo compacto o extractos)
-      if (this.ctx.includeSections) {
-        const sec = [
-          ["Gerundios", s.gerundios],
-          ["Oraciones", s.oraciones],
-          ["Párrafos", s.parrafos],
-          ["Persona", s.persona],
-          ["Voz Pasiva", s.vozPasiva],
-          ["Conectores", s.conectores],
-          ["Complejidad", s.complejidad],
-          ["Lecturabilidad", s.lecturabilidad],
-          ["Propósito", s.proposito],
-        ];
-        const recs = {
-          "Gerundios": "Evita gerundios repetidos; prefiere verbos conjugados y conectores.",
-          "Oraciones": "Evita oraciones demasiado largas o cortas; usa puntuación y conectores.",
-          "Párrafos": "Mantén 3–5 oraciones por párrafo con una idea central.",
-          "Persona": "Prefiere tercera persona/voz impersonal para informes.",
-          "Voz Pasiva": "Reduce voz pasiva en exceso; usa voz activa cuando aporte claridad.",
-          "Conectores": "Asegura conectores adecuados y evita repetición.",
-          "Complejidad": "Acerca el verbo al primer cuarto de la oración; simplifica el inicio.",
-          "Lecturabilidad": "Ajusta longitud de palabras/frases al rango recomendado.",
-          "Propósito": "Alinea el contenido con el propósito de la sección (introducción, resultados, etc.)."
-        };
-        const compactLine = (k, v) => {
-          const flag = typeof v?.error !== "undefined" ? (v.error ? "Problemas" : "OK") : "N/D";
-          const count = this.sectionErrorCount(k, v);
-          const reco = recs[k] ? ` – ${recs[k]}` : "";
-          const extras = count !== null ? ` (errores: ${count})` : "";
-          return `## ${k}\nIndicador: ${flag}${extras}${reco}`;
-        };
-        const blocks = sec.map(([k, v]) => {
-          if (!v) return null;
-          if (this.ctx.format === "compact") {
-            return compactLine(k, v);
-          } else {
-            const flag = typeof v.error !== "undefined" ? v.error : null;
-            const txt = v.html ? String(v.html).replace(/<[^>]+>/g, '') : '';
-            const snippet = txt ? (txt.slice(0, 400) + (txt.length > 400 ? '…' : '')) : '';
-            const lineFlag = flag === null ? '' : `\nIndicador: ${flag ? 'Problemas detectados' : 'Sin problemas'}`;
-            const reco = recs[k] ? `\nRecomendación: ${recs[k]}` : '';
-            return `## ${k}${lineFlag}${reco}${snippet ? `\nExtracto: ${snippet}` : ''}`;
-          }
-        }).filter(Boolean);
-        if (blocks.length) {
-          parts.push(`# Secciones\n${blocks.join('\n\n')}`);
-        }
-      }
-      // Texto del editor: si ya incluimos secciones (que suelen derivar del texto), evita duplicar
+      
+      // Texto del editor
       if (this.ctx.includeEditorText && s.textoEditor) {
-        if (!this.ctx.includeSections) {
-          parts.push(`# Texto del editor\n${String(s.textoEditor).slice(0, 1500)}${String(s.textoEditor).length > 1500 ? '…' : ''}`);
-        } else {
-          parts.push(`# Texto del editor\n(adjuntado en payload, omitido aquí para evitar duplicación)`);
-        }
+        const editorText = String(s.textoEditor).replace(/<[^>]+>/g, '');
+        const preview = editorText.slice(0, 1500) + (editorText.length > 1500 ? '…' : '');
+        parts.push(`# Texto del editor\n${preview}`);
       }
+      
+      // Secciones de feedback (solo las seleccionadas)
+      const sections = [
+        { key: 'gerundios', name: 'Gerundios', data: s.gerundios },
+        { key: 'oraciones', name: 'Oraciones', data: s.oraciones },
+        { key: 'parrafos', name: 'Párrafos', data: s.parrafos },
+        { key: 'persona', name: 'Persona', data: s.persona },
+        { key: 'vozPasiva', name: 'Voz Pasiva', data: s.vozPasiva },
+        { key: 'conectores', name: 'Conectores', data: s.conectores },
+        { key: 'complejidad', name: 'Complejidad', data: s.complejidad },
+        { key: 'lecturabilidad', name: 'Lecturabilidad', data: s.lecturabilidad },
+        { key: 'proposito', name: 'Propósito', data: s.proposito }
+      ];
+      
+      const sectionBlocks = [];
+      sections.forEach(({ key, name, data }) => {
+        if (!this.attachSections[key] || !data) return;
+        
+        const tiposRetroalimentacion = data.tiposRetroalimentacion;
+        if (!tiposRetroalimentacion || typeof tiposRetroalimentacion !== 'object') return;
+        
+        const feedbackBlocks = [];
+        Object.keys(tiposRetroalimentacion).forEach(ruleKey => {
+          const feedbackType = tiposRetroalimentacion[ruleKey];
+          if (!feedbackType) return;
+          
+          // Solo mostrar si hay errores
+          const nroErrores = feedbackType.nro_errores;
+          const hasErrors = nroErrores !== null && nroErrores !== undefined && nroErrores > 0;
+          if (!hasErrors) return;
+          
+          const lines = [];
+          if (feedbackType.feedbackTitle) {
+            lines.push(`**${feedbackType.feedbackTitle}**`);
+          }
+          if (feedbackType.nro_errores) {
+            lines.push(`Errores detectados: ${feedbackType.nro_errores}`);
+          }
+          if (feedbackType.negativeFeedback) {
+            lines.push(`Feedback: ${feedbackType.negativeFeedback.slice(0, 200)}${feedbackType.negativeFeedback.length > 200 ? '…' : ''}`);
+          }
+          
+          if (lines.length > 0) {
+            feedbackBlocks.push(`### ${ruleKey}\n${lines.join('\n')}`);
+          }
+        });
+        
+        if (feedbackBlocks.length > 0) {
+          sectionBlocks.push(`## ${name}\n${feedbackBlocks.join('\n\n')}`);
+        }
+      });
+      
+      if (sectionBlocks.length > 0) {
+        parts.push(`# Section Feedback\n${sectionBlocks.join('\n\n')}`);
+      }
+      
       return parts.join('\n\n') || 'Sin contexto seleccionado.';
     },
+    contextPayloadJson() {
+      try {
+        return JSON.stringify(this.buildContextPayload(), null, 2);
+      } catch (e) {
+        return "(error construyendo payload)";
+      }
+    }
   },
   methods: {
     copyPrompt() {
@@ -286,67 +330,238 @@ export default {
         return null;
       }
     },
-    buildContextPayload() {
-      // Construye contexto estructurado para backend
-      const s = this.$store.state || {};
-      const ctx = { schemaVersion: 2 };
-      const MAX_EDITOR_CHARS = 2000; // limita texto del editor
-      const MAX_SECTION_CHARS = 1200; // por sección en modo extractos
-      const stripHtml = (t) => String(t || "").replace(/<[^>]+>/g, '');
-      const truncate = (t, n) => {
-        const str = String(t || "");
-        return str.length > n ? (str.slice(0, n) + '…') : str;
-      };
-      if (this.ctx.includeStatistics && s.estadisticasGenerales) {
-        ctx.statistics = s.estadisticasGenerales;
+    /**
+     * Extrae los párrafos/oraciones que contienen errores destacados del HTML
+     * @param {string} html - HTML de la sección
+     * @returns {Array<string>} - Array de extractos HTML con errores
+     */
+    extractErrorHtml(html) {
+      if (!html || typeof html !== 'string') {
+        console.log('[PromptingLab] extractErrorHtml: No HTML provided');
+        return [];
       }
-      // Evitar duplicar: si se incluyen secciones, no enviar texto completo del editor
-      // En su lugar, enviar un snippet pequeño solo en formato compacto
-      if (this.ctx.includeSections) {
-        if (this.ctx.format === "compact") {
-          // Solo indicadores y conteos
-          ctx.sectionSummary = {
-            gerundios: { flag: s.gerundios?.error ?? null, errors: this.sectionErrorCount("Gerundios", s.gerundios) },
-            oraciones: { flag: s.oraciones?.error ?? null, errors: this.sectionErrorCount("Oraciones", s.oraciones) },
-            parrafos: { flag: s.parrafos?.error ?? null, errors: this.sectionErrorCount("Párrafos", s.parrafos) },
-            persona: { flag: s.persona?.error ?? null, errors: this.sectionErrorCount("Persona", s.persona) },
-            vozPasiva: { flag: s.vozPasiva?.error ?? null, errors: this.sectionErrorCount("Voz Pasiva", s.vozPasiva) },
-            conectores: { flag: s.conectores?.error ?? null, errors: this.sectionErrorCount("Conectores", s.conectores) },
-            complejidad: { flag: s.complejidad?.error ?? null, errors: this.sectionErrorCount("Complejidad", s.complejidad) },
-            lecturabilidad: { flag: s.lecturabilidad?.error ?? null, errors: this.sectionErrorCount("Lecturabilidad", s.lecturabilidad) },
-            proposito: { flag: s.proposito?.error ?? null, errors: this.sectionErrorCount("Propósito", s.proposito) },
-          };
-          if (this.ctx.includeEditorText && s.textoEditor) {
-            ctx.editorTextSnippet = truncate(s.textoEditor, MAX_EDITOR_CHARS);
+      
+      try {
+        // Crear un elemento temporal para parsear el HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        const extracts = [];
+        const seen = new Set(); // Para evitar duplicados
+        
+        // ESTRATEGIA 1: Buscar spans con background-color en style (formato del backend)
+        // Ejemplo: <span style="background-color:#FFAFAF;">...</span>
+        const errorSpans = tempDiv.querySelectorAll('span[style*="background-color"]');
+        console.log(`[PromptingLab] extractErrorHtml: Found ${errorSpans.length} spans with background-color`);
+        
+        errorSpans.forEach(span => {
+          // Obtener el párrafo padre que contiene el error
+          const parentParagraph = span.closest('p');
+          if (parentParagraph) {
+            const paragraphHtml = parentParagraph.outerHTML;
+            // Usar un hash más completo para evitar duplicados
+            const htmlHash = paragraphHtml.substring(0, 300);
+            if (!seen.has(htmlHash)) {
+              seen.add(htmlHash);
+              extracts.push(paragraphHtml);
+            }
+          } else {
+            // Si el span no está dentro de un párrafo, incluir el span completo
+            // pero intentar encontrar el párrafo más cercano
+            let currentElement = span.parentElement;
+            while (currentElement && currentElement.tagName !== 'P' && currentElement !== tempDiv) {
+              currentElement = currentElement.parentElement;
+            }
+            if (currentElement && currentElement.tagName === 'P') {
+              const paragraphHtml = currentElement.outerHTML;
+              const htmlHash = paragraphHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(paragraphHtml);
+              }
+            } else {
+              // Si no hay párrafo padre, incluir el span completo con contexto
+              const spanHtml = span.outerHTML;
+              const htmlHash = spanHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(spanHtml);
+              }
+            }
           }
-        } else {
-          // Extractos HTML (legacy)
-          const sec = {
-            gerundios: s.gerundios?.html,
-            oraciones: s.oraciones?.html,
-            parrafos: s.parrafos?.html,
-            persona: s.persona?.html,
-            vozPasiva: s.vozPasiva?.html,
-            conectores: s.conectores?.html,
-            complejidad: s.complejidad?.html,
-            lecturabilidad: s.lecturabilidad?.html,
-            proposito: s.proposito?.html,
-          };
-          // Strip HTML y trunca cada sección, eliminando nulos
-          const cleaned = {};
-          Object.keys(sec).forEach(k => {
-            if (sec[k]) {
-              const txt = stripHtml(sec[k]);
-              cleaned[k] = truncate(txt, MAX_SECTION_CHARS);
+        });
+        
+        // ESTRATEGIA 2: Buscar párrafos que contengan elementos destacados (b, u, strong)
+        // cuando están dentro de spans con background-color
+        if (extracts.length === 0) {
+          const paragraphs = tempDiv.querySelectorAll('p');
+          console.log(`[PromptingLab] extractErrorHtml: Checking ${paragraphs.length} paragraphs for highlighted content`);
+          
+          paragraphs.forEach(p => {
+            // Buscar spans con background-color dentro del párrafo
+            const hasErrorSpan = p.querySelector('span[style*="background-color"]');
+            // Buscar elementos b, u, strong que puedan indicar palabras destacadas
+            const hasHighlightedWords = p.querySelector('b, u, strong');
+            
+            if (hasErrorSpan || hasHighlightedWords) {
+              const paragraphHtml = p.outerHTML;
+              const htmlHash = paragraphHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(paragraphHtml);
+              }
             }
           });
-          ctx.sections = cleaned;
-          // No incluir editorText cuando ya adjuntamos extractos para evitar duplicación
         }
-      } else if (this.ctx.includeEditorText && s.textoEditor) {
-        // Si no hay secciones, incluir texto del editor (truncado)
-        ctx.editorText = truncate(s.textoEditor, MAX_EDITOR_CHARS);
+        
+        // ESTRATEGIA 3: Buscar párrafos con clases de error (formato legacy)
+        const paragraphsWithClasses = tempDiv.querySelectorAll('p.bg-red, p.bg-yellow, p.bg-orange, p.bg-blue, p.bg-lightgreen, p[class*="bg-"]');
+        paragraphsWithClasses.forEach(p => {
+          const paragraphHtml = p.outerHTML;
+          const htmlHash = paragraphHtml.substring(0, 300);
+          if (!seen.has(htmlHash)) {
+            seen.add(htmlHash);
+            extracts.push(paragraphHtml);
+          }
+        });
+        
+        // ESTRATEGIA 4: Buscar spans con clase highlight (formato alternativo)
+        const highlightSpans = tempDiv.querySelectorAll('span.highlight, span[class*="highlight"]');
+        highlightSpans.forEach(span => {
+          const parentParagraph = span.closest('p');
+          if (parentParagraph) {
+            const paragraphHtml = parentParagraph.outerHTML;
+            const htmlHash = paragraphHtml.substring(0, 300);
+            if (!seen.has(htmlHash)) {
+              seen.add(htmlHash);
+              extracts.push(paragraphHtml);
+            }
+          }
+        });
+        
+        console.log(`[PromptingLab] extractErrorHtml: Final result - Found ${extracts.length} error extracts`);
+        if (extracts.length > 0) {
+          console.log('[PromptingLab] extractErrorHtml: Sample extract:', extracts[0].substring(0, 200));
+        } else {
+          console.warn('[PromptingLab] extractErrorHtml: No extracts found. HTML sample:', html.substring(0, 1000));
+        }
+        
+        return extracts;
+      } catch (error) {
+        console.warn('[PromptingLab] Error extracting HTML extracts:', error);
+        return [];
       }
+    },
+    buildContextPayload() {
+      // Construye contexto estructurado para backend (Schema v3)
+      const s = this.$store.state || {};
+      const ctx = { 
+        schemaVersion: 3  // Nueva versión del schema
+      };
+      
+      const stripHtml = (t) => String(t || "").replace(/<[^>]+>/g, '');
+      const MAX_EDITOR_CHARS = 2000;
+      
+      // 1. Editor Text (opcional, sanitizado)
+      if (this.ctx.includeEditorText && s.textoEditor) {
+        ctx.editorText = stripHtml(s.textoEditor);
+        // Truncar si es muy largo
+        if (ctx.editorText.length > MAX_EDITOR_CHARS) {
+          ctx.editorText = ctx.editorText.slice(0, MAX_EDITOR_CHARS) + '…';
+        }
+      }
+      
+      // 2. Section Feedback (estructura principal)
+      ctx.sectionFeedback = {};
+      
+      // Secciones disponibles
+      const sections = [
+        { key: 'gerundios', name: 'Gerundios', data: s.gerundios },
+        { key: 'oraciones', name: 'Oraciones', data: s.oraciones },
+        { key: 'parrafos', name: 'Párrafos', data: s.parrafos },
+        { key: 'persona', name: 'Persona', data: s.persona },
+        { key: 'vozPasiva', name: 'Voz Pasiva', data: s.vozPasiva },
+        { key: 'conectores', name: 'Conectores', data: s.conectores },
+        { key: 'complejidad', name: 'Complejidad', data: s.complejidad },
+        { key: 'lecturabilidad', name: 'Lecturabilidad', data: s.lecturabilidad },
+        { key: 'proposito', name: 'Propósito', data: s.proposito }
+      ];
+      
+      sections.forEach(({ key, data }) => {
+        // Solo procesar si la sección está seleccionada y tiene datos
+        if (!this.attachSections[key] || !data) return;
+        
+        const tiposRetroalimentacion = data.tiposRetroalimentacion;
+        if (!tiposRetroalimentacion || typeof tiposRetroalimentacion !== 'object') return;
+        
+        ctx.sectionFeedback[key] = {};
+        
+        // Iterar sobre cada tipo de retroalimentación
+        Object.keys(tiposRetroalimentacion).forEach(ruleKey => {
+          const feedbackType = tiposRetroalimentacion[ruleKey];
+          if (!feedbackType) return;
+          
+          // VALIDACIÓN: Solo incluir si hay errores detectados
+          const nroErrores = feedbackType.nro_errores;
+          const hasErrors = nroErrores !== null && nroErrores !== undefined && nroErrores > 0;
+          
+          // Si no hay errores, saltar este tipo de retroalimentación
+          if (!hasErrors) return;
+          
+          // Construir el objeto de feedback
+          const feedbackObj = {};
+          
+          // Incluir campos según configuración
+          if (this.attachTipoFields.feedbackTitle && feedbackType.feedbackTitle) {
+            feedbackObj.feedbackTitle = feedbackType.feedbackTitle;
+          }
+          if (this.attachTipoFields.feedbackComment && feedbackType.feedbackComment) {
+            feedbackObj.feedbackComment = feedbackType.feedbackComment;
+          }
+          if (this.attachTipoFields.negativeFeedback && feedbackType.negativeFeedback) {
+            feedbackObj.negativeFeedback = feedbackType.negativeFeedback;
+          }
+          if (this.attachTipoFields.errorExample && feedbackType.errorExample) {
+            feedbackObj.errorExample = feedbackType.errorExample;
+          }
+          if (this.attachTipoFields.errorCorrection && feedbackType.errorCorrection) {
+            feedbackObj.errorCorrection = feedbackType.errorCorrection;
+          }
+          if (this.attachTipoFields.errorComment && feedbackType.errorComment) {
+            feedbackObj.errorComment = feedbackType.errorComment;
+          }
+          
+          // Siempre incluir nro_errores si está disponible (ya validamos que > 0)
+          if (typeof nroErrores !== 'undefined') {
+            feedbackObj.nro_errores = nroErrores;
+          }
+          
+          // Extraer extractos HTML de errores solo si hay errores
+          // Siempre incluir errorExtracts cuando hay errores, incluso si está vacío
+          // para que aparezca en la previsualización
+          if (data.html && nroErrores > 0) {
+            const errorExtracts = this.extractErrorHtml(data.html);
+            // Incluir siempre, incluso si está vacío, para debugging
+            feedbackObj.errorExtracts = errorExtracts;
+            console.log(`[PromptingLab] Added errorExtracts for ${key}.${ruleKey}:`, {
+              count: errorExtracts.length,
+              hasHtml: !!data.html,
+              nroErrores: nroErrores
+            });
+          }
+          
+          // Solo agregar si el objeto tiene al menos un campo
+          if (Object.keys(feedbackObj).length > 0) {
+            ctx.sectionFeedback[key][ruleKey] = feedbackObj;
+          }
+        });
+        
+        // Eliminar sección si está vacía
+        if (Object.keys(ctx.sectionFeedback[key]).length === 0) {
+          delete ctx.sectionFeedback[key];
+        }
+      });
+      
       return ctx;
     },
     async runAll() {
@@ -359,25 +574,88 @@ export default {
       // Logs de diagnóstico
       try {
         const approx = JSON.stringify(ctxPayload).length;
-        const editorLen = (ctxPayload.editorText || ctxPayload.editorTextSnippet || "").length || 0;
-        const sectionKeys = ctxPayload.sections ? Object.keys(ctxPayload.sections) : [];
-        const sectionCharSum = sectionKeys.reduce((acc, k) => acc + String(ctxPayload.sections[k] || "").length, 0);
+        const editorLen = (ctxPayload.editorText || "").length || 0;
+        const sectionFeedbackKeys = ctxPayload.sectionFeedback ? Object.keys(ctxPayload.sectionFeedback) : [];
+        
+        // Contar tipos de feedback y extractos
+        let totalFeedbackTypes = 0;
+        let totalExtracts = 0;
+        if (ctxPayload.sectionFeedback) {
+          Object.values(ctxPayload.sectionFeedback).forEach(section => {
+            if (section && typeof section === 'object') {
+              Object.values(section).forEach(feedbackType => {
+                if (feedbackType && typeof feedbackType === 'object') {
+                  totalFeedbackTypes++;
+                  if (Array.isArray(feedbackType.errorExtracts)) {
+                    totalExtracts += feedbackType.errorExtracts.length;
+                  }
+                }
+              });
+            }
+          });
+        }
+        
         // eslint-disable-next-line no-console
-        console.log("[PromptingLab] Context payload", {
+        console.log("[PromptingLab] Context payload summary", {
+          schemaVersion: ctxPayload.schemaVersion,
           approxBytes: approx,
-          hasStatistics: !!ctxPayload.statistics,
-          hasSectionSummary: !!ctxPayload.sectionSummary,
-          sectionKeys,
-          sectionCharSum,
+          hasEditorText: !!ctxPayload.editorText,
           editorChars: editorLen,
-          format: this.ctx.format
+          hasSectionFeedback: !!ctxPayload.sectionFeedback,
+          sectionFeedbackKeys,
+          totalFeedbackTypes,
+          totalExtracts
         });
+        
+        // Log del payload JSON completo que se enviará
+        const payloadJson = JSON.stringify(ctxPayload, null, 2);
+        // eslint-disable-next-line no-console
+        console.log("[PromptingLab] Full context payload JSON:", payloadJson);
+        
+        // Verificación: comparar con el payload mostrado en la UI
+        const uiPayloadJson = this.contextPayloadJson;
+        if (payloadJson !== uiPayloadJson) {
+          // eslint-disable-next-line no-console
+          console.warn("[PromptingLab] WARNING: Payload JSON differs from UI preview!");
+          // eslint-disable-next-line no-console
+          console.log("[PromptingLab] UI payload:", uiPayloadJson);
+          // eslint-disable-next-line no-console
+          console.log("[PromptingLab] Actual payload:", payloadJson);
+        } else {
+          // eslint-disable-next-line no-console
+          console.log("[PromptingLab] ✓ Payload JSON matches UI preview");
+        }
+        
+        // Validación: asegurar que el contexto no esté vacío
+        if (!ctxPayload.sectionFeedback || Object.keys(ctxPayload.sectionFeedback).length === 0) {
+          // eslint-disable-next-line no-console
+          console.warn("[PromptingLab] WARNING: sectionFeedback is empty! Check if sections are selected and have errors.");
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.log("[PromptingLab] Context log error", e);
       }
       // Intento vía backend
       try {
+        // Validación: asegurar que el contexto se esté pasando
+        if (!ctxPayload || (typeof ctxPayload !== 'object')) {
+          console.error("[PromptingLab] ERROR: ctxPayload is invalid:", ctxPayload);
+          throw new Error("Context payload is invalid");
+        }
+        
+        // Validar que el contexto tenga al menos schemaVersion
+        if (!ctxPayload.schemaVersion) {
+          console.warn("[PromptingLab] WARNING: ctxPayload missing schemaVersion, adding default");
+          ctxPayload.schemaVersion = 3;
+        }
+        
+        console.log("[PromptingLab] Sending request with context:", {
+          schemaVersion: ctxPayload.schemaVersion,
+          hasEditorText: !!ctxPayload.editorText,
+          hasSectionFeedback: !!ctxPayload.sectionFeedback,
+          sectionFeedbackKeys: ctxPayload.sectionFeedback ? Object.keys(ctxPayload.sectionFeedback) : []
+        });
+        
         const response = await runPromptBatch({
           prompt: this.prompt,
           models,
@@ -608,6 +886,39 @@ export default {
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   color: var(--text-primary);
+}
+.subsection-title {
+  margin: 0.5rem 0 0.25rem 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.context-note {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: var(--background-color);
+  border-left: 3px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.settings-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+  white-space: normal;
+  word-break: break-word;
 }
 .custom-models {
   display: flex;

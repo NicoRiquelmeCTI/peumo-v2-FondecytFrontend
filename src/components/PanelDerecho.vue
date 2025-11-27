@@ -62,6 +62,80 @@
                     <span>Adjuntar resultados del análisis</span>
                   </label>
                 </div>
+              <div v-if="attachAnalysis" class="settings-row">
+                <div class="toggle">Secciones a adjuntar</div>
+              </div>
+              <div v-if="attachAnalysis" class="settings-matrix">
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.gerundios" />
+                  <span>Gerundios</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.oraciones" />
+                  <span>Oraciones</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.parrafos" />
+                  <span>Párrafos</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.persona" />
+                  <span>Persona</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.vozPasiva" />
+                  <span>Voz Pasiva</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.conectores" />
+                  <span>Conectores</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.complejidad" />
+                  <span>Complejidad</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.lecturabilidad" />
+                  <span>Lecturabilidad</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachSections.proposito" />
+                  <span>Propósito</span>
+                </label>
+              </div>
+              <div v-if="attachAnalysis" class="settings-row">
+                <div class="toggle">Campos de tipos de retroalimentación</div>
+              </div>
+              <div v-if="attachAnalysis" class="settings-matrix">
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.feedbackTitle" />
+                  <span>feedbackTitle</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.feedbackComment" />
+                  <span>feedbackComment</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.negativeFeedback" />
+                  <span>negativeFeedback</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.errorExample" />
+                  <span>errorExample</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.errorCorrection" />
+                  <span>errorCorrection</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.errorComment" />
+                  <span>errorComment</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" v-model="attachTipoFields.nro_errores" />
+                  <span>nro_errores</span>
+                </label>
+              </div>
                 <div class="settings-row">
                   <button class="download-btn" :disabled="!hasAnalysis" @click="downloadAnalysisJson">
                     Descargar análisis (JSON)
@@ -109,6 +183,26 @@ export default {
       isLoading: false,
       typingTimer: null,
       selectedModel: 'x-ai/grok-4.1-fast:free',
+      attachSections: {
+        gerundios: true,
+        oraciones: true,
+        parrafos: true,
+        persona: true,
+        vozPasiva: true,
+        conectores: true,
+        complejidad: true,
+        lecturabilidad: true,
+        proposito: true,
+      },
+      attachTipoFields: {
+        feedbackTitle: false,
+        feedbackComment: false,
+        negativeFeedback: false,
+        errorExample: false,
+        errorCorrection: false,
+        errorComment: false,
+        nro_errores: false,
+      },
     };
   },
   computed: {
@@ -139,17 +233,53 @@ export default {
       const ctx = {};
       if (s.estadisticasGenerales) ctx.statistics = s.estadisticasGenerales;
       if (s.textoEditor) ctx.editorText = s.textoEditor;
-      ctx.sections = {
-        gerundios: s.gerundios?.html || null,
-        oraciones: s.oraciones?.html || null,
-        parrafos: s.parrafos?.html || null,
-        persona: s.persona?.html || null,
-        vozPasiva: s.vozPasiva?.html || null,
-        conectores: s.conectores?.html || null,
-        complejidad: s.complejidad?.html || null,
-        lecturabilidad: s.lecturabilidad?.html || null,
-        proposito: s.proposito?.html || null,
-      };
+      const sections = {};
+      const sectionFeedback = {};
+      if (this.attachSections.gerundios) sections.gerundios = s.gerundios?.html || null;
+      if (this.attachSections.oraciones) sections.oraciones = s.oraciones?.html || null;
+      if (this.attachSections.parrafos) sections.parrafos = s.parrafos?.html || null;
+      if (this.attachSections.persona) sections.persona = s.persona?.html || null;
+      if (this.attachSections.vozPasiva) sections.vozPasiva = s.vozPasiva?.html || null;
+      if (this.attachSections.conectores) sections.conectores = s.conectores?.html || null;
+      if (this.attachSections.complejidad) sections.complejidad = s.complejidad?.html || null;
+      if (this.attachSections.lecturabilidad) sections.lecturabilidad = s.lecturabilidad?.html || null;
+      if (this.attachSections.proposito) sections.proposito = s.proposito?.html || null;
+      // Añade resumen de tiposRetroalimentacion según campos seleccionados
+      const anyTipoField = Object.values(this.attachTipoFields).some(Boolean);
+      if (anyTipoField) {
+        const pickFields = (obj) => {
+          const out = {};
+          Object.keys(this.attachTipoFields).forEach((k) => {
+            if (this.attachTipoFields[k] && typeof obj?.[k] !== "undefined") {
+              out[k] = obj[k];
+            }
+          });
+          return out;
+        };
+        const buildForSection = (sectionObj) => {
+          const tr = sectionObj?.tiposRetroalimentacion;
+          if (!tr || typeof tr !== "object") return null;
+          const result = {};
+          Object.keys(tr).forEach((ruleKey) => {
+            const picked = pickFields(tr[ruleKey] || {});
+            if (Object.keys(picked).length > 0) {
+              result[ruleKey] = picked;
+            }
+          });
+          return Object.keys(result).length > 0 ? result : null;
+        };
+        if (this.attachSections.gerundios) sectionFeedback.gerundios = buildForSection(s.gerundios);
+        if (this.attachSections.oraciones) sectionFeedback.oraciones = buildForSection(s.oraciones);
+        if (this.attachSections.parrafos) sectionFeedback.parrafos = buildForSection(s.parrafos);
+        if (this.attachSections.persona) sectionFeedback.persona = buildForSection(s.persona);
+        if (this.attachSections.vozPasiva) sectionFeedback.vozPasiva = buildForSection(s.vozPasiva);
+        if (this.attachSections.conectores) sectionFeedback.conectores = buildForSection(s.conectores);
+        if (this.attachSections.complejidad) sectionFeedback.complejidad = buildForSection(s.complejidad);
+        if (this.attachSections.lecturabilidad) sectionFeedback.lecturabilidad = buildForSection(s.lecturabilidad);
+        if (this.attachSections.proposito) sectionFeedback.proposito = buildForSection(s.proposito);
+      }
+      ctx.sections = sections;
+      if (anyTipoField) ctx.sectionFeedback = sectionFeedback;
       return ctx;
     },
     ensureJSZip() {
@@ -663,6 +793,20 @@ ${body || "<p>No hay contenido HTML disponible.</p>"}
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.settings-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .toggle {
