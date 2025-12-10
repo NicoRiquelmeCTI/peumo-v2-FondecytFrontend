@@ -5,28 +5,12 @@
         <h2 class="panel-title">Panel</h2>
         <p class="panel-subtitle">Análisis y asistente de escritura</p>
       </header>
-      <div class="tabs">
-        <button
-          class="tab-btn"
-          :class="{ active: selectedTab === 'analysis' }"
-          @click="selectedTab = 'analysis'"
-        >
-          Análisis
-        </button>
-        <button
-          class="tab-btn"
-          :class="{ active: selectedTab === 'chat' }"
-          @click="selectedTab = 'chat'"
-        >
-          Chat
-        </button>
-        </div>
       <!-- Analysis Tab -->
-      <div v-show="selectedTab === 'analysis'" class="analysis-wrap">
-        <TabRetroalimentacion />
+      <div class="analysis-wrap">
+          <TabRetroalimentacion />
         </div>
-      <!-- Chat Tab -->
-      <div v-show="selectedTab === 'chat'" class="chat">
+      <!-- Legacy Chat Tab (hidden, kept for reference) -->
+      <div v-show="false" class="chat">
         <div class="chat-messages" ref="messages">
           <div
             v-for="(m, idx) in messages"
@@ -139,8 +123,8 @@
                     </label>
                   </div>
                   <p v-if="attachAnalysis" class="context-note">Nota: Solo se incluirán tipos de retroalimentación con errores detectados (nro_errores > 0). Los extractos HTML de errores se incluyen automáticamente.</p>
-                </div>
-                
+        </div>
+
                 <div class="settings-section">
                   <h4 class="settings-section-title">Descargar resultados</h4>
                   <div class="settings-row">
@@ -154,8 +138,8 @@
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
+        </div>
+        </div>
             <button class="send-btn" :disabled="!canSend" @click="send">
               Enviar
             </button>
@@ -177,15 +161,10 @@ export default {
   },
   data() {
     return {
+      // Legacy chat data (kept for reference, not used anymore)
       selectedTab: 'analysis',
       input: "",
-      messages: [
-        {
-          role: "assistant",
-          content:
-            "Hola, soy tu asistente de escritura. Puedo ayudarte a mejorar tu texto, sugerir reescrituras y responder preguntas. ¿En qué te ayudo?",
-        },
-      ],
+      messages: [],
       showSettings: false,
       attachAnalysis: false,
       isLoading: false,
@@ -785,11 +764,7 @@ ${body || "<p>No hay contenido HTML disponible.</p>"}
     },
   },
   mounted() {
-    // Si no hay análisis, abre chat por defecto
-    if (!this.hasAnalysis) {
-      this.selectedTab = 'chat';
-    }
-    this.scrollToBottom();
+    // Chat ahora está integrado en cada sección
   },
 };
 </script>
