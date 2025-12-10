@@ -43,7 +43,31 @@
           </button>
           <div v-if="showSettings" class="settings-popup">
             <div class="settings-section">
-              <h4 class="settings-section-title">Contexto a adjuntar</h4>
+              <div class="settings-section-header">
+                <h4 class="settings-section-title">Contexto a adjuntar</h4>
+                <button class="info-btn" @click="showInfo = !showInfo" title="Más información sobre el contexto por defecto">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Popup de información -->
+              <div v-if="showInfo" class="info-popup">
+                <div class="info-content">
+                  <h5>Contexto por defecto</h5>
+                  <p>Cuando no tienes opciones seleccionadas, el chat recibe automáticamente:</p>
+                  <ul>
+                    <li><strong>nro_errores</strong>: El número de errores encontrados en cada tipo de retroalimentación</li>
+                    <li><strong>errorExtracts</strong>: Extractos HTML de los párrafos/oraciones que contienen errores destacados</li>
+                  </ul>
+                  <p>Esto permite al asistente ver dónde están los errores sin necesidad de configurar opciones adicionales.</p>
+                  <p><strong>Opcional:</strong> Puedes activar los checkboxes para incluir campos adicionales como títulos, comentarios, ejemplos y correcciones.</p>
+                </div>
+              </div>
+              
               <div class="settings-row">
                 <label class="toggle">
                   <input type="checkbox" v-model="ctx.includeEditorText" />
@@ -138,7 +162,31 @@
               </button>
               <div v-if="showSettings" class="settings-popup">
                 <div class="settings-section">
-                  <h4 class="settings-section-title">Contexto a adjuntar</h4>
+                  <div class="settings-section-header">
+                    <h4 class="settings-section-title">Contexto a adjuntar</h4>
+                    <button class="info-btn" @click="showInfo = !showInfo" title="Más información sobre el contexto por defecto">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <!-- Popup de información -->
+                  <div v-if="showInfo" class="info-popup">
+                    <div class="info-content">
+                      <h5>Contexto por defecto</h5>
+                      <p>Cuando no tienes opciones seleccionadas, el chat recibe automáticamente:</p>
+                      <ul>
+                        <li><strong>nro_errores</strong>: El número de errores encontrados en cada tipo de retroalimentación</li>
+                        <li><strong>errorExtracts</strong>: Extractos HTML de los párrafos/oraciones que contienen errores destacados</li>
+                      </ul>
+                      <p>Esto permite al asistente ver dónde están los errores sin necesidad de configurar opciones adicionales.</p>
+                      <p><strong>Opcional:</strong> Puedes activar los checkboxes para incluir campos adicionales como títulos, comentarios, ejemplos y correcciones.</p>
+                    </div>
+                  </div>
+                  
                   <div class="settings-row">
                     <label class="toggle">
                       <input type="checkbox" v-model="ctx.includeEditorText" />
@@ -225,6 +273,7 @@ export default {
       ],
       showSettings: false,
       showMaximized: false,
+      showInfo: false,
       isLoading: false,
       typingTimer: null,
       selectedModel: 'openai/gpt-oss-20b:free',
@@ -890,11 +939,82 @@ export default {
   margin-bottom: 0;
 }
 
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .settings-section-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.info-btn {
+  padding: 0.25rem 0.4rem;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.info-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--background-color);
+}
+
+.info-popup {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--primary-color);
+  border-radius: var(--radius-md);
+}
+
+.info-content h5 {
   margin: 0 0 0.5rem 0;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.info-content p {
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.info-content ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.info-content li {
+  margin: 0.25rem 0;
+  line-height: 1.5;
+}
+
+.info-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .settings-row {
