@@ -245,6 +245,7 @@
 
 <script>
 import { runPromptBatch } from "@/api/llm.js";
+import { mapGetters } from "vuex";
 
 export default {
   name: "SectionChat",
@@ -291,11 +292,28 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({
+      analysisTab: "getAnalysisTab",
+    }),
     canSend() {
       return this.input && this.input.trim().length > 0;
     },
     hasSectionData() {
       return this.sectionData && this.sectionData.html;
+    },
+  },
+  watch: {
+    // Limpiar el chat cuando cambia el tab de análisis
+    analysisTab(newTab, oldTab) {
+      if (newTab !== oldTab && oldTab !== null && oldTab !== undefined) {
+        this.clearChat();
+      }
+    },
+    // También limpiar cuando cambia el sectionKey (por si acaso)
+    sectionKey(newKey, oldKey) {
+      if (newKey !== oldKey && oldKey !== null && oldKey !== undefined) {
+        this.clearChat();
+      }
     },
   },
   methods: {
@@ -560,6 +578,32 @@ export default {
       this.$nextTick(() => {
         const el = this.$refs[`messages-maximized-${this.sectionKey}`];
         if (el) el.scrollTop = el.scrollHeight;
+      });
+    },
+    clearChat() {
+      // Limpiar mensajes y resetear al mensaje inicial
+      this.messages = [
+        {
+          role: "assistant",
+          content: `Hola, soy tu asistente de escritura especializado en ${this.sectionName}. Puedo ayudarte a entender los errores encontrados y sugerir mejoras. ¿En qué te ayudo?`,
+        },
+      ];
+      // Limpiar input
+      this.input = "";
+      // Detener cualquier typing en progreso
+      if (this.typingTimer) {
+        clearInterval(this.typingTimer);
+        this.typingTimer = null;
+      }
+      // Resetear estado de carga
+      this.isLoading = false;
+      // Cerrar popups
+      this.showSettings = false;
+      this.showInfo = false;
+      // Scroll al inicio
+      this.$nextTick(() => {
+        this.scrollToBottom();
+        this.scrollMaximizedToBottom();
       });
     },
     scrollToBottomIfNeeded() {
