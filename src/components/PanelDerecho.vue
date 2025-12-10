@@ -56,95 +56,103 @@
                 ⚙️
               </button>
               <div v-if="showSettings" class="settings-popup">
-                <div class="settings-row">
-                  <label class="toggle">
-                    <input type="checkbox" v-model="attachAnalysis" />
-                    <span>Adjuntar resultados del análisis</span>
-                  </label>
+                <div class="settings-section">
+                  <h4 class="settings-section-title">Contexto a adjuntar</h4>
+                  <div class="settings-row">
+                    <label class="toggle">
+                      <input type="checkbox" v-model="attachAnalysis" />
+                      <span>Adjuntar resultados del análisis</span>
+                    </label>
+                  </div>
+                  <div class="settings-row">
+                    <label class="toggle">
+                      <input type="checkbox" v-model="ctx.includeEditorText" />
+                      <span>Texto del editor</span>
+                    </label>
+                  </div>
+                  
+                  <div v-if="attachAnalysis" class="subsection-title">Secciones a incluir</div>
+                  <div v-if="attachAnalysis" class="settings-matrix">
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.gerundios" />
+                      <span>Gerundios</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.oraciones" />
+                      <span>Oraciones</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.parrafos" />
+                      <span>Párrafos</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.persona" />
+                      <span>Persona</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.vozPasiva" />
+                      <span>Voz Pasiva</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.conectores" />
+                      <span>Conectores</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.complejidad" />
+                      <span>Complejidad</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.lecturabilidad" />
+                      <span>Lecturabilidad</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachSections.proposito" />
+                      <span>Propósito</span>
+                    </label>
+                  </div>
+                  
+                  <div v-if="attachAnalysis" class="subsection-title">Campos de tipos de retroalimentación</div>
+                  <div v-if="attachAnalysis" class="settings-matrix">
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.feedbackTitle" />
+                      <span>feedbackTitle</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.feedbackComment" />
+                      <span>feedbackComment</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.negativeFeedback" />
+                      <span>negativeFeedback</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.errorExample" />
+                      <span>errorExample</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.errorCorrection" />
+                      <span>errorCorrection</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" v-model="attachTipoFields.errorComment" />
+                      <span>errorComment</span>
+                    </label>
+                  </div>
+                  <p v-if="attachAnalysis" class="context-note">Nota: Solo se incluirán tipos de retroalimentación con errores detectados (nro_errores > 0). Los extractos HTML de errores se incluyen automáticamente.</p>
                 </div>
-              <div v-if="attachAnalysis" class="settings-row">
-                <div class="toggle">Secciones a adjuntar</div>
-              </div>
-              <div v-if="attachAnalysis" class="settings-matrix">
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.gerundios" />
-                  <span>Gerundios</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.oraciones" />
-                  <span>Oraciones</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.parrafos" />
-                  <span>Párrafos</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.persona" />
-                  <span>Persona</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.vozPasiva" />
-                  <span>Voz Pasiva</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.conectores" />
-                  <span>Conectores</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.complejidad" />
-                  <span>Complejidad</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.lecturabilidad" />
-                  <span>Lecturabilidad</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachSections.proposito" />
-                  <span>Propósito</span>
-                </label>
-              </div>
-              <div v-if="attachAnalysis" class="settings-row">
-                <div class="toggle">Campos de tipos de retroalimentación</div>
-              </div>
-              <div v-if="attachAnalysis" class="settings-matrix">
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.feedbackTitle" />
-                  <span>feedbackTitle</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.feedbackComment" />
-                  <span>feedbackComment</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.negativeFeedback" />
-                  <span>negativeFeedback</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.errorExample" />
-                  <span>errorExample</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.errorCorrection" />
-                  <span>errorCorrection</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.errorComment" />
-                  <span>errorComment</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" v-model="attachTipoFields.nro_errores" />
-                  <span>nro_errores</span>
-                </label>
-              </div>
-                <div class="settings-row">
-                  <button class="download-btn" :disabled="!hasAnalysis" @click="downloadAnalysisJson">
-                    Descargar análisis (JSON)
-                  </button>
-                </div>
-                <div class="settings-row">
-                  <button class="zip-btn" :disabled="!hasAnalysis" @click="downloadAnalysisZip">
-                    Descargar paquete (ZIP)
-                  </button>
+                
+                <div class="settings-section">
+                  <h4 class="settings-section-title">Descargar resultados</h4>
+                  <div class="settings-row">
+                    <button class="download-btn" :disabled="!hasAnalysis" @click="downloadAnalysisJson">
+                      Descargar análisis (JSON)
+                    </button>
+                  </div>
+                  <div class="settings-row">
+                    <button class="zip-btn" :disabled="!hasAnalysis" @click="downloadAnalysisZip">
+                      Descargar paquete (ZIP)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -182,7 +190,10 @@ export default {
       attachAnalysis: false,
       isLoading: false,
       typingTimer: null,
-      selectedModel: 'x-ai/grok-4.1-fast:free',
+      selectedModel: 'openai/gpt-oss-20b:free',
+      ctx: {
+        includeEditorText: false
+      },
       attachSections: {
         gerundios: true,
         oraciones: true,
@@ -228,58 +239,238 @@ export default {
     },
   },
   methods: {
-    buildContextPayload() {
-      const s = this.$store.state || {};
-      const ctx = {};
-      if (s.estadisticasGenerales) ctx.statistics = s.estadisticasGenerales;
-      if (s.textoEditor) ctx.editorText = s.textoEditor;
-      const sections = {};
-      const sectionFeedback = {};
-      if (this.attachSections.gerundios) sections.gerundios = s.gerundios?.html || null;
-      if (this.attachSections.oraciones) sections.oraciones = s.oraciones?.html || null;
-      if (this.attachSections.parrafos) sections.parrafos = s.parrafos?.html || null;
-      if (this.attachSections.persona) sections.persona = s.persona?.html || null;
-      if (this.attachSections.vozPasiva) sections.vozPasiva = s.vozPasiva?.html || null;
-      if (this.attachSections.conectores) sections.conectores = s.conectores?.html || null;
-      if (this.attachSections.complejidad) sections.complejidad = s.complejidad?.html || null;
-      if (this.attachSections.lecturabilidad) sections.lecturabilidad = s.lecturabilidad?.html || null;
-      if (this.attachSections.proposito) sections.proposito = s.proposito?.html || null;
-      // Añade resumen de tiposRetroalimentacion según campos seleccionados
-      const anyTipoField = Object.values(this.attachTipoFields).some(Boolean);
-      if (anyTipoField) {
-        const pickFields = (obj) => {
-          const out = {};
-          Object.keys(this.attachTipoFields).forEach((k) => {
-            if (this.attachTipoFields[k] && typeof obj?.[k] !== "undefined") {
-              out[k] = obj[k];
-            }
-          });
-          return out;
-        };
-        const buildForSection = (sectionObj) => {
-          const tr = sectionObj?.tiposRetroalimentacion;
-          if (!tr || typeof tr !== "object") return null;
-          const result = {};
-          Object.keys(tr).forEach((ruleKey) => {
-            const picked = pickFields(tr[ruleKey] || {});
-            if (Object.keys(picked).length > 0) {
-              result[ruleKey] = picked;
-            }
-          });
-          return Object.keys(result).length > 0 ? result : null;
-        };
-        if (this.attachSections.gerundios) sectionFeedback.gerundios = buildForSection(s.gerundios);
-        if (this.attachSections.oraciones) sectionFeedback.oraciones = buildForSection(s.oraciones);
-        if (this.attachSections.parrafos) sectionFeedback.parrafos = buildForSection(s.parrafos);
-        if (this.attachSections.persona) sectionFeedback.persona = buildForSection(s.persona);
-        if (this.attachSections.vozPasiva) sectionFeedback.vozPasiva = buildForSection(s.vozPasiva);
-        if (this.attachSections.conectores) sectionFeedback.conectores = buildForSection(s.conectores);
-        if (this.attachSections.complejidad) sectionFeedback.complejidad = buildForSection(s.complejidad);
-        if (this.attachSections.lecturabilidad) sectionFeedback.lecturabilidad = buildForSection(s.lecturabilidad);
-        if (this.attachSections.proposito) sectionFeedback.proposito = buildForSection(s.proposito);
+    /**
+     * Extrae los párrafos/oraciones que contienen errores destacados del HTML
+     * @param {string} html - HTML de la sección
+     * @returns {Array<string>} - Array de extractos HTML con errores
+     */
+    extractErrorHtml(html) {
+      if (!html || typeof html !== 'string') {
+        console.log('[PanelDerecho] extractErrorHtml: No HTML provided');
+        return [];
       }
-      ctx.sections = sections;
-      if (anyTipoField) ctx.sectionFeedback = sectionFeedback;
+      
+      try {
+        // Crear un elemento temporal para parsear el HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        const extracts = [];
+        const seen = new Set(); // Para evitar duplicados
+        
+        // ESTRATEGIA 1: Buscar spans con background-color en style (formato del backend)
+        // Ejemplo: <span style="background-color:#FFAFAF;">...</span>
+        const errorSpans = tempDiv.querySelectorAll('span[style*="background-color"]');
+        console.log(`[PanelDerecho] extractErrorHtml: Found ${errorSpans.length} spans with background-color`);
+        
+        errorSpans.forEach(span => {
+          // Obtener el párrafo padre que contiene el error
+          const parentParagraph = span.closest('p');
+          if (parentParagraph) {
+            const paragraphHtml = parentParagraph.outerHTML;
+            // Usar un hash más completo para evitar duplicados
+            const htmlHash = paragraphHtml.substring(0, 300);
+            if (!seen.has(htmlHash)) {
+              seen.add(htmlHash);
+              extracts.push(paragraphHtml);
+            }
+          } else {
+            // Si el span no está dentro de un párrafo, incluir el span completo
+            // pero intentar encontrar el párrafo más cercano
+            let currentElement = span.parentElement;
+            while (currentElement && currentElement.tagName !== 'P' && currentElement !== tempDiv) {
+              currentElement = currentElement.parentElement;
+            }
+            if (currentElement && currentElement.tagName === 'P') {
+              const paragraphHtml = currentElement.outerHTML;
+              const htmlHash = paragraphHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(paragraphHtml);
+              }
+            } else {
+              // Si no hay párrafo padre, incluir el span completo con contexto
+              const spanHtml = span.outerHTML;
+              const htmlHash = spanHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(spanHtml);
+              }
+            }
+          }
+        });
+        
+        // ESTRATEGIA 2: Buscar párrafos que contengan elementos destacados (b, u, strong)
+        // cuando están dentro de spans con background-color
+        if (extracts.length === 0) {
+          const paragraphs = tempDiv.querySelectorAll('p');
+          console.log(`[PanelDerecho] extractErrorHtml: Checking ${paragraphs.length} paragraphs for highlighted content`);
+          
+          paragraphs.forEach(p => {
+            // Buscar spans con background-color dentro del párrafo
+            const hasErrorSpan = p.querySelector('span[style*="background-color"]');
+            // Buscar elementos b, u, strong que puedan indicar palabras destacadas
+            const hasHighlightedWords = p.querySelector('b, u, strong');
+            
+            if (hasErrorSpan || hasHighlightedWords) {
+              const paragraphHtml = p.outerHTML;
+              const htmlHash = paragraphHtml.substring(0, 300);
+              if (!seen.has(htmlHash)) {
+                seen.add(htmlHash);
+                extracts.push(paragraphHtml);
+              }
+            }
+          });
+        }
+        
+        // ESTRATEGIA 3: Buscar párrafos con clases de error (formato legacy)
+        const paragraphsWithClasses = tempDiv.querySelectorAll('p.bg-red, p.bg-yellow, p.bg-orange, p.bg-blue, p.bg-lightgreen, p[class*="bg-"]');
+        paragraphsWithClasses.forEach(p => {
+          const paragraphHtml = p.outerHTML;
+          const htmlHash = paragraphHtml.substring(0, 300);
+          if (!seen.has(htmlHash)) {
+            seen.add(htmlHash);
+            extracts.push(paragraphHtml);
+          }
+        });
+        
+        // ESTRATEGIA 4: Buscar spans con clase highlight (formato alternativo)
+        const highlightSpans = tempDiv.querySelectorAll('span.highlight, span[class*="highlight"]');
+        highlightSpans.forEach(span => {
+          const parentParagraph = span.closest('p');
+          if (parentParagraph) {
+            const paragraphHtml = parentParagraph.outerHTML;
+            const htmlHash = paragraphHtml.substring(0, 300);
+            if (!seen.has(htmlHash)) {
+              seen.add(htmlHash);
+              extracts.push(paragraphHtml);
+            }
+          }
+        });
+        
+        console.log(`[PanelDerecho] extractErrorHtml: Final result - Found ${extracts.length} error extracts`);
+        if (extracts.length > 0) {
+          console.log('[PanelDerecho] extractErrorHtml: Sample extract:', extracts[0].substring(0, 200));
+        } else {
+          console.warn('[PanelDerecho] extractErrorHtml: No extracts found. HTML sample:', html.substring(0, 1000));
+        }
+        
+        return extracts;
+      } catch (error) {
+        console.warn('[PanelDerecho] Error extracting HTML extracts:', error);
+        return [];
+      }
+    },
+    buildContextPayload() {
+      // Construye contexto estructurado para backend (Schema v3)
+      const s = this.$store.state || {};
+      const ctx = { 
+        schemaVersion: 3  // Nueva versión del schema
+      };
+      
+      const stripHtml = (t) => String(t || "").replace(/<[^>]+>/g, '');
+      const MAX_EDITOR_CHARS = 2000;
+      
+      // 1. Editor Text (opcional, sanitizado)
+      if (this.ctx.includeEditorText && s.textoEditor) {
+        ctx.editorText = stripHtml(s.textoEditor);
+        // Truncar si es muy largo
+        if (ctx.editorText.length > MAX_EDITOR_CHARS) {
+          ctx.editorText = ctx.editorText.slice(0, MAX_EDITOR_CHARS) + '…';
+        }
+      }
+      
+      // 2. Section Feedback (estructura principal)
+      ctx.sectionFeedback = {};
+      
+      // Secciones disponibles
+      const sections = [
+        { key: 'gerundios', name: 'Gerundios', data: s.gerundios },
+        { key: 'oraciones', name: 'Oraciones', data: s.oraciones },
+        { key: 'parrafos', name: 'Párrafos', data: s.parrafos },
+        { key: 'persona', name: 'Persona', data: s.persona },
+        { key: 'vozPasiva', name: 'Voz Pasiva', data: s.vozPasiva },
+        { key: 'conectores', name: 'Conectores', data: s.conectores },
+        { key: 'complejidad', name: 'Complejidad', data: s.complejidad },
+        { key: 'lecturabilidad', name: 'Lecturabilidad', data: s.lecturabilidad },
+        { key: 'proposito', name: 'Propósito', data: s.proposito }
+      ];
+      
+      sections.forEach(({ key, data }) => {
+        // Solo procesar si la sección está seleccionada y tiene datos
+        if (!this.attachSections[key] || !data) return;
+        
+        const tiposRetroalimentacion = data.tiposRetroalimentacion;
+        if (!tiposRetroalimentacion || typeof tiposRetroalimentacion !== 'object') return;
+        
+        ctx.sectionFeedback[key] = {};
+        
+        // Iterar sobre cada tipo de retroalimentación
+        Object.keys(tiposRetroalimentacion).forEach(ruleKey => {
+          const feedbackType = tiposRetroalimentacion[ruleKey];
+          if (!feedbackType) return;
+          
+          // VALIDACIÓN: Solo incluir si hay errores detectados
+          const nroErrores = feedbackType.nro_errores;
+          const hasErrors = nroErrores !== null && nroErrores !== undefined && nroErrores > 0;
+          
+          // Si no hay errores, saltar este tipo de retroalimentación
+          if (!hasErrors) return;
+          
+          // Construir el objeto de feedback
+          const feedbackObj = {};
+          
+          // Incluir campos según configuración
+          if (this.attachTipoFields.feedbackTitle && feedbackType.feedbackTitle) {
+            feedbackObj.feedbackTitle = feedbackType.feedbackTitle;
+          }
+          if (this.attachTipoFields.feedbackComment && feedbackType.feedbackComment) {
+            feedbackObj.feedbackComment = feedbackType.feedbackComment;
+          }
+          if (this.attachTipoFields.negativeFeedback && feedbackType.negativeFeedback) {
+            feedbackObj.negativeFeedback = feedbackType.negativeFeedback;
+          }
+          if (this.attachTipoFields.errorExample && feedbackType.errorExample) {
+            feedbackObj.errorExample = feedbackType.errorExample;
+          }
+          if (this.attachTipoFields.errorCorrection && feedbackType.errorCorrection) {
+            feedbackObj.errorCorrection = feedbackType.errorCorrection;
+          }
+          if (this.attachTipoFields.errorComment && feedbackType.errorComment) {
+            feedbackObj.errorComment = feedbackType.errorComment;
+          }
+          
+          // Siempre incluir nro_errores si está disponible (ya validamos que > 0)
+          if (typeof nroErrores !== 'undefined') {
+            feedbackObj.nro_errores = nroErrores;
+          }
+          
+          // Extraer extractos HTML de errores solo si hay errores
+          // Siempre incluir errorExtracts cuando hay errores, incluso si está vacío
+          // para que aparezca en la previsualización
+          if (data.html && nroErrores > 0) {
+            const errorExtracts = this.extractErrorHtml(data.html);
+            // Incluir siempre, incluso si está vacío, para debugging
+            feedbackObj.errorExtracts = errorExtracts;
+            console.log(`[PanelDerecho] Added errorExtracts for ${key}.${ruleKey}:`, {
+              count: errorExtracts.length,
+              hasHtml: !!data.html,
+              nroErrores: nroErrores
+            });
+          }
+          
+          // Solo agregar si el objeto tiene al menos un campo
+          if (Object.keys(feedbackObj).length > 0) {
+            ctx.sectionFeedback[key][ruleKey] = feedbackObj;
+          }
+        });
+        
+        // Eliminar sección si está vacía
+        if (Object.keys(ctx.sectionFeedback[key]).length === 0) {
+          delete ctx.sectionFeedback[key];
+        }
+      });
+      
       return ctx;
     },
     ensureJSZip() {
@@ -296,8 +487,9 @@ export default {
     send() {
       const text = (this.input || "").trim();
       if (!text) return;
-      const includeNote = this.attachAnalysis && this.hasAnalysis
-        ? `<div class='note'>[Adjuntando resumen de análisis del documento]</div>`
+      const hasContext = (this.attachAnalysis && this.hasAnalysis) || this.ctx.includeEditorText;
+      const includeNote = hasContext
+        ? `<div class='note'>[Adjuntando contexto del documento]</div>`
         : "";
       this.messages.push({ role: "user", content: this.escape(text) + includeNote });
       this.input = "";
@@ -307,9 +499,10 @@ export default {
       this.isLoading = true;
       this.messages.push({ role: "assistant", content: "" });
       const assistantIndex = this.messages.length - 1;
-      const models = ["x-ai/grok-4.1-fast:free"];
+      const models = ["openai/gpt-oss-20b:free"];
       const params = { temperature: 0.7, maxTokens: 512 };
-      const context = this.attachAnalysis && this.hasAnalysis ? this.buildContextPayload() : {};
+      // Construir contexto solo si hay análisis o texto del editor seleccionado
+      const context = hasContext ? this.buildContextPayload() : {};
       runPromptBatch({
         prompt: text,
         models,
@@ -317,22 +510,43 @@ export default {
         context
       })
         .then((resp) => {
-          const content = resp?.results?.[models[0]]?.content || "";
-          if (!content) {
-            const html = this.escape("Sin respuesta del backend.");
+          // Verificar si hay errores en la respuesta
+          const errors = resp?.errors || {};
+          const modelError = errors[models[0]];
+          
+          if (modelError) {
+            // Hay un error específico para este modelo
+            const errorMessage = modelError.message || "Error desconocido del backend";
+            const html = this.escape(`Error: ${errorMessage}`);
             this.$set(this.messages, assistantIndex, { role: "assistant", content: html });
+            this.isLoading = false;
+            this.$nextTick(this.scrollToBottom);
+            return;
+          }
+          
+          // Verificar si hay contenido en los resultados
+          const results = resp?.results || {};
+          const content = results[models[0]]?.content || "";
+          
+          if (!content || content.trim().length === 0) {
+            // No hay contenido, pero no hay error explícito
+            const html = this.escape("El backend no devolvió contenido en la respuesta.");
+            this.$set(this.messages, assistantIndex, { role: "assistant", content: html });
+            this.isLoading = false;
             this.$nextTick(this.scrollToBottom);
           } else {
+            // Hay contenido, usar typeOut (que establecerá isLoading = false al terminar)
             this.typeOut(assistantIndex, content);
           }
         })
-        .catch(() => {
-          // Fallback mock
-          const mockHtml = this.generateMock(text);
-          this.$set(this.messages, assistantIndex, { role: "assistant", content: "" });
-          // type out mock (strip HTML tags for streaming then reapply)
-          const plain = mockHtml.replace(/<[^>]+>/g, '');
-          this.typeOut(assistantIndex, plain);
+        .catch((error) => {
+          // Error en la petición o en el procesamiento
+          console.error("[PanelDerecho] Error en runPromptBatch:", error);
+          const errorMessage = error?.message || "Error al conectar con el backend";
+          const html = this.escape(`Error: ${errorMessage}`);
+          this.$set(this.messages, assistantIndex, { role: "assistant", content: html });
+          this.isLoading = false;
+          this.$nextTick(this.scrollToBottom);
         });
     },
     typeOut(index, fullText) {
@@ -363,8 +577,9 @@ export default {
     persistModel() { /* fixed model: noop */ },
     generateMock(question) {
       const q = question.length > 160 ? question.slice(0, 160) + "…" : question;
-      const attachInfo = this.attachAnalysis && this.hasAnalysis
-        ? "<div>He recibido también un resumen del análisis del documento.</div>"
+      const hasContext = (this.attachAnalysis && this.hasAnalysis) || this.ctx.includeEditorText;
+      const attachInfo = hasContext
+        ? "<div>He recibido también contexto del documento.</div>"
         : "";
       return `
         <div><strong>Respuesta preliminar</strong> (mock):</div>
@@ -778,13 +993,45 @@ ${body || "<p>No hay contenido HTML disponible.</p>"}
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
-  width: 260px;
+  width: 280px;
+  max-height: 80vh;
+  overflow-y: auto;
   background: var(--surface-color);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: 0.75rem;
   z-index: 100;
+}
+.settings-section {
+  margin-bottom: 1rem;
+}
+.settings-section:last-child {
+  margin-bottom: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+.settings-section-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.subsection-title {
+  margin: 0.5rem 0 0.25rem 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.context-note {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: var(--background-color);
+  border-left: 3px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .settings-row {
