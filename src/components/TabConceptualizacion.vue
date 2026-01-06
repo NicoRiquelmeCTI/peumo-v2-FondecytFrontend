@@ -2,9 +2,19 @@
   <div id="Conceptualizacion">
       <header class="cont-tit">
           <h2 class="tit">Conceptualización</h2>
-          <p class="bajada">
-              En este botón puedes encontrar ayuda para la fase de generar ideas. <br> Si quieres observar el índice y la extensión de las tesis de un año en particular, indícalo. Si deseas buscar por patrón, te sugerimos marcar la opción ‘todos los años’.
-          </p>
+          <div class="description-card">
+              <div class="card-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+              </div>
+              <div class="card-content">
+                  <p class="bajada">
+                      En este botón puedes encontrar ayuda para la fase de generar ideas. <br> Si quieres observar el índice y la extensión de las tesis de un año en particular, indícalo. Si deseas buscar por patrón, te sugerimos marcar la opción 'todos los años'.
+                  </p>
+              </div>
+          </div>
       </header>
       <div class="wrapper">
           <FormulateForm class="filterbar" @submit="submitHandler" #default="{ isLoading }">
@@ -123,7 +133,7 @@ export default {
             resIndice: null,
             resIndice2: [{'title':'','paper_index':''}],
             patron: null,
-            anio: 0,
+            anio: "null",
             funciones: null,
             optionsFunciones:[
                 {value: 'Indice', label:"Indice"},
@@ -187,3 +197,77 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+/* Description Card Styles */
+.description-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.description-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.bajada {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .description-card {
+    padding: 0.875rem;
+    gap: 0.625rem;
+  }
+  
+  .card-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .bajada {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .description-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .card-icon {
+    align-self: flex-start;
+  }
+}
+</style>

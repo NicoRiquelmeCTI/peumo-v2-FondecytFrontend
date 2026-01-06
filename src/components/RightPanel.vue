@@ -6,7 +6,6 @@
         <b-tab title="Retroalimentación" active>
           <div v-if="!getRetroalimentacion.feedbackTypes">
             <Barchart :chartData="getChartData" />
-            <Estadisticas :estadisticas="getEstadisticasGenerales" />
           </div>
           <div v-else>
             <TabRetroalimentacion :feedbackTypes="getRetroalimentacion.feedbackTypes" />
@@ -19,7 +18,7 @@
           <TabConcordancia />
         </b-tab>
         <b-tab title="Consulta Procesos">
-          <TabConcordancia />
+          <TabConsultaProcesos />
         </b-tab>
         <b-tab title="Cápsulas informativas">
           hola
@@ -35,19 +34,19 @@
 <script>
 import { mapGetters } from "vuex";
 import Barchart from "./Barchart.vue";
-import Estadisticas from './Estadisticas.vue';
 import TabRetroalimentacion from "./Tabs/TabRetroalimentacion.vue";
 import TabDetalle from "./Tabs/TabDetalle.vue";
 import TabConcordancia from "./Tabs/TabConcordancia.vue";
+import TabConsultaProcesos from "./TabConsultaProcesos.vue";
 
 export default {
   name: "RightPanel",
   components: {
     Barchart,
-    Estadisticas,
     TabRetroalimentacion,
     TabDetalle,
     TabConcordancia,
+    TabConsultaProcesos,
   },
   data() {
     return {
@@ -57,7 +56,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["getChartData", "getRetroalimentacion", "getEstadisticasGenerales"]),
+    ...mapGetters(["getChartData", "getRetroalimentacion"]),
   },
   mounted() {
     this.$root.$on("mensaje_showRightPanel", () => {

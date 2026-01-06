@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@braid/vue-formulate": "^2.5.2",
+    "animate.css": "^4.1.1",
+    "aos": "^2.3.4",
     "axios": "^0.21.4",
     "bootstrap-vue": "^2.15.0",
     "chart.js": "^2.9.4",
@@ -17,6 +19,7 @@
     "splitpanes": "^2.3.6",
     "utf8": "^3.0.0",
     "vue": "^2.6.11",
+    "vue-aos": "^3.1.0",
     "vue-chartjs": "^3.5.1",
     "vue-loading-overlay": "^3.4.2",
     "vue-quill-editor": "^3.0.6",

@@ -13,6 +13,9 @@ import "vue-loading-overlay/dist/vue-loading.css"
 import VueFormulate from '@braid/vue-formulate'
 import { es } from '@braid/vue-formulate-i18n'
 import './assets/css/vueFormulate.css'
+import 'animate.css'
+import AOS from 'aos'
+import 'aos/dist/aos.css'
 // import './assets/js-local/jquery/jquery-3.6.0.min.js'
 
 Vue.config.productionTip = false
@@ -34,4 +37,12 @@ new Vue({
     App
   },
   render: h => h(App),
+  mounted() {
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+      offset: 100
+    });
+  }
 })

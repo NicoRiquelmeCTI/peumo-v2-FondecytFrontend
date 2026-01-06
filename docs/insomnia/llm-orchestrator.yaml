@@ -1,0 +1,43 @@
+_type: export
+__export_format: 4
+__export_date: 2025-11-24T00:00:00.000Z
+__export_source: insomnia.desktop.app:2025.5.0
+resources:
+  - _id: wrk_peumo_llm
+    parentId: null
+    _type: workspace
+    name: PEUMO LLM Orchestrator
+  - _id: env_peumo_llm
+    parentId: wrk_peumo_llm
+    _type: environment
+    name: Base Environment
+    data:
+      baseUrl: http://localhost:8000
+      apiToken: ""
+  - _id: req_run_batch
+    parentId: wrk_peumo_llm
+    _type: request
+    name: Run Batch
+    method: POST
+    url: "{{ baseUrl }}/api/llm/run-batch"
+    headers:
+      - name: Content-Type
+        value: application/json
+      - name: Authorization
+        value: "Bearer {{ apiToken }}"
+    body:
+      mimeType: application/json
+      text: |
+        {
+          "prompt": "Resume el texto y propone 3 preguntas de discusión.",
+          "models": ["gpt-4o-mini", "claude-3.5-sonnet"],
+          "params": { "temperature": 0.7, "maxTokens": 1024 },
+          "context": {
+            "statistics": {"analysis": {"total_words": 1200}},
+            "editorText": "Texto del editor aquí...",
+            "sections": { "gerundios": "<p>...</p>", "oraciones": "<p>...</p>" }
+          },
+          "correlationId": "local-test-123"
+        }
+
+
