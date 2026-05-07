@@ -277,7 +277,8 @@ export default {
       showInfo: false,
       isLoading: false,
       typingTimer: null,
-      selectedModel: 'openai/gpt-oss-20b:free',
+      selectedModel: process.env.VUE_APP_DEFAULT_CHAT_MODEL || 'openai/gpt-oss-20b:free',
+ 
       ctx: {
         includeEditorText: false
       },
